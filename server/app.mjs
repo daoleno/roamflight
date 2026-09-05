@@ -55,7 +55,7 @@ export function createApp(root) {
         res.setHeader(
           'Cache-Control',
           html
-            ? 'no-cache'
+            ? 'public, no-cache, no-transform'
             : hashed
               ? 'public, max-age=31536000, immutable'
               : 'public, max-age=3600, must-revalidate',

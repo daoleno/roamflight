@@ -123,6 +123,9 @@ the bundled text locally, with no `Accept-Language` variation or language redire
 Hashed scripts, styles and the shared locale chunk are under `/app/` with a one-year
 immutable cache. Non-hashed geographical data remains under `/assets/` with its
 separate cache policy. New text releases do not invalidate terrain or texture URLs.
+HTML also sends `public, no-cache, no-transform`: Cloudflare's documented mechanism
+for preventing automatic Web Analytics beacon injection into these pages. This keeps
+the strict same-origin script policy and does not change analytics on the main site.
 
 After deployment, verify the root page, `/healthz`, `/credits.html`, actual model
 and texture loads, and a real 404. Run the browser tests against the returned URL.

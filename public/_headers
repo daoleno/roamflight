@@ -5,19 +5,19 @@
   Permissions-Policy: camera=(), microphone=(), geolocation=()
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'self'; base-uri 'self'
 /
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /index.html
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /credits.html
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /credits
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /404.html
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /auth/complete
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /auth/complete.html
-  Cache-Control: no-cache
+  Cache-Control: public, no-cache, no-transform
 /app/*
   Cache-Control: public, max-age=31536000, immutable
 /healthz

@@ -30,7 +30,7 @@ test('production server exposes only built files with compression, caching and s
     const response = await fetch(base);
     assert.equal(response.status, 200);
     assert.equal(await response.text(), html);
-    assert.equal(response.headers.get('cache-control'), 'no-cache');
+    assert.equal(response.headers.get('cache-control'), 'public, no-cache, no-transform');
     assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
     assert.equal(response.headers.get('x-powered-by'), null);
     assert.ok(response.headers.get('content-security-policy').includes("script-src 'self'"));
