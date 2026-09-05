@@ -16,12 +16,15 @@ import {
   PackageOpen,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   ChevronsUp,
   RotateCcw,
 } from 'lucide';
 import { createWorld, createPackage } from './world.js';
 import { rotatePropeller } from './aircraft.js';
 import { FlightAudio } from './audio.js';
+import { stepFlight } from './flight.js';
 import {
   RADIUS,
   DEG,
@@ -29,7 +32,6 @@ import {
   toCoordinate,
   headingVector,
   headingDegrees,
-  advanceFlight,
   distanceKm,
   findCountry,
   departures,
@@ -51,6 +53,8 @@ const icons = {
   PackageOpen,
   ArrowLeft,
   ArrowRight,
+  ArrowUp,
+  ArrowDown,
   ChevronsUp,
   RotateCcw,
 };
@@ -74,6 +78,8 @@ const state = {
   throttle: 0.75,
   speed: 0.75,
   bank: 0,
+  pitch: 0,
+  flightAccumulator: 0,
   radius: 106.2,
   up: toPoint(...departures.africa.coordinate),
   forward: headingVector(toPoint(...departures.africa.coordinate), departures.africa.heading),
@@ -190,6 +196,7 @@ async function start() {
           triangles: renderer.info.render.triangles,
           camera: camera.position.toArray(),
           radius: state.radius,
+          pitch: state.pitch,
           ground,
         };
       },
@@ -259,6 +266,8 @@ function setDeparture(key) {
   state.target = [...config.destination];
   state.radius = 106.2;
   state.bank = 0;
+  state.pitch = 0;
+  state.flightAccumulator = 0;
   state.speed = state.throttle;
   state.delivered = 0;
   state.totalDropped = 0;
@@ -589,26 +598,31 @@ function frame(now) {
     const turn =
       (keys.has('ArrowRight') || keys.has('KeyD') ? 1 : 0) -
       (keys.has('ArrowLeft') || keys.has('KeyA') ? 1 : 0);
-    if (keys.has('ArrowUp') || keys.has('KeyW'))
-      state.throttle = Math.min(1.7, state.throttle + dt * 0.3);
-    if (keys.has('ArrowDown') || keys.has('KeyS'))
-      state.throttle = Math.max(0.3, state.throttle - dt * 0.3);
-    const boost = keys.has('ShiftLeft') || keys.has('ShiftRight');
-    state.speed = THREE.MathUtils.damp(state.speed, state.throttle * (boost ? 2.2 : 1), 2, dt);
-    advanceFlight(state.up, state.forward, state.speed * 0.012 * dt, turn * 0.7 * dt);
-    state.bank = THREE.MathUtils.damp(state.bank, turn * 0.48, 4.5, dt);
     terrainElapsed += dt;
     if (terrainElapsed > 0.14) {
       ground = world.groundRadius(state.up);
       terrainElapsed = 0;
     }
-    state.radius = THREE.MathUtils.damp(state.radius, Math.max(106.2, ground + 3.2), 1.8, dt);
+    stepFlight(
+      state,
+      {
+        turn,
+        accelerate:
+          (keys.has('ArrowUp') || keys.has('KeyW') ? 1 : 0) -
+          (keys.has('ArrowDown') || keys.has('KeyS') ? 1 : 0),
+        climb: (keys.has('KeyE') ? 1 : 0) - (keys.has('KeyQ') ? 1 : 0),
+        boost: keys.has('ShiftLeft') || keys.has('ShiftRight'),
+      },
+      dt,
+      ground,
+    );
     updatePackages(dt);
     world.uniforms.time.value = state.elapsed;
   }
   right.copy(state.up).cross(state.forward).normalize();
   basis.makeBasis(right, state.up, state.forward);
   world.aircraft.quaternion.setFromRotationMatrix(basis);
+  world.aircraft.rotateX(-state.pitch);
   world.aircraft.rotateZ(state.bank);
   world.aircraft.position.copy(state.up).multiplyScalar(state.radius);
   if (!state.paused && !state.map) rotatePropeller(world.propeller, dt, state.speed);
@@ -745,6 +759,8 @@ for (const [id, code] of [
   ['left', 'ArrowLeft'],
   ['right', 'ArrowRight'],
   ['boost', 'ShiftLeft'],
+  ['climb', 'KeyE'],
+  ['descend', 'KeyQ'],
 ]) {
   $(id).addEventListener('pointerdown', (e) => {
     e.preventDefault();

@@ -295,7 +295,8 @@ h1 {
   left: 24px;
   gap: 12px;
 }
-#touch-controls button {
+#touch-controls button,
+#altitude-controls button {
   width: 51px;
   height: 51px;
   border: 1px solid #ffffff70;
@@ -305,8 +306,17 @@ h1 {
   touch-action: none;
   user-select: none;
 }
-#touch-controls button:active {
+#touch-controls button:active,
+#altitude-controls button:active {
   background: #ffffff50;
+}
+#altitude-controls {
+  display: none;
+  position: absolute;
+  right: 24px;
+  bottom: 110px;
+  flex-direction: column;
+  gap: 10px;
 }
 #loading {
   position: absolute;
@@ -444,7 +454,8 @@ dialog a {
   display: none;
 }
 @media (pointer: coarse) {
-  #touch-controls {
+  #touch-controls,
+  #altitude-controls {
     display: flex;
   }
 }
@@ -559,7 +570,8 @@ dialog a {
     left: 19px;
     gap: 10px;
   }
-  #touch-controls button {
+  #touch-controls button,
+  #altitude-controls button {
     width: 42px;
     height: 42px;
   }
@@ -567,6 +579,10 @@ dialog a {
     position: fixed;
     right: 20px;
     bottom: 102px;
+  }
+  #altitude-controls {
+    right: 20px;
+    bottom: 154px;
   }
   #notification {
     font-size: 17px;

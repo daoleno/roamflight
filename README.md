@@ -29,6 +29,7 @@ Each visitor plays an independent session. This is not a multiplayer game.
 
 - Fly around a real geographical globe with terrain relief, coastlines and borders.
 - Steer, bank, change air speed and boost with keyboard or touch controls.
+- Pitch up or down to climb and descend, with a protective terrain clearance.
 - Drop parachute packages, receive delivery feedback and advance destinations.
 - Switch between chase, reverse and overhead views, or orbit the globe map.
 - Depart from Southern Africa, the Alps, the Himalayas, the Andes or New Zealand.
@@ -65,6 +66,7 @@ use 5173 for development or stop that service before running another server.
 | -------------------------------------- | ------------------------------------------- |
 | A / D or Left / Right                  | Turn and bank                               |
 | W / S or Up / Down                     | Increase / decrease speed                   |
+| Q / E                                  | Descend / climb                             |
 | Shift                                  | Boost                                       |
 | Space                                  | Drop a package                              |
 | C                                      | Change camera                               |
@@ -75,7 +77,7 @@ use 5173 for development or stop that service before running another server.
 | Drag horizontally on the flight canvas | Steer                                       |
 | Speaker icon                           | Enable / mute the audio preset              |
 
-Phones have steering, boost and package buttons. Browser audio requires an explicit
+Phones have steering, climb/descend, boost and package buttons. Browser audio requires an explicit
 gesture: tap the speaker icon after loading. Pausing or switching away fades sound
 to silence. Use the device volume for overall loudness; old mixer preferences are
 ignored. Packages landing within 190 km of a destination count as successful in
