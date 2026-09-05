@@ -40,6 +40,9 @@ on the same port.
 Cloudflare Pages is the public hosting target. `npm run build:pages` produces a
 static-only artifact with edge headers, a true 404 page and health metadata.
 The Express server is used locally and in Docker, not executed on Pages.
+An isolated Pages Function at `/auth/callback` supports short-lived, PKCE-protected
+Cloudflare OAuth domain setup. Its DNS target is fixed, credentials stay server-side,
+and the game and all other routes remain static through `_routes.json`.
 
 ## Assets And Delivery
 

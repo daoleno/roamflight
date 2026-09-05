@@ -19,8 +19,8 @@ not features already present in this release.
 
 - Local/LAN: `http://192.168.110.223:4177/`
 - Tailnet: `http://100.92.174.90:4177/`
-- Public game: **https://roamflight.pages.dev/**.
-- Custom domain: `roamflight.wooo.guru` is attached to Pages; DNS verification is pending.
+- Public game: **https://roamflight.wooo.guru/**.
+- Pages fallback: https://roamflight.pages.dev/.
 - Source: [daoleno/roamflight](https://github.com/daoleno/roamflight).
 
 Each visitor plays an independent session. This is not a multiplayer game.

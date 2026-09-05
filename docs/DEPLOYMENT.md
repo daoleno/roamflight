@@ -3,7 +3,7 @@
 ## Current Status
 
 The local `roamflight.service` serves the built app at port 4177. The public Pages
-deployment is **https://roamflight.pages.dev/** and follows verified incremental
+deployment is **https://roamflight.wooo.guru/** (with `roamflight.pages.dev` as a fallback) and follows verified incremental
 releases from `main`. The first release was published from commit `bc33d76`.
 Initial deployment URL: `https://100ef101.roamflight.pages.dev`.
 OAuth device authorization completed successfully with account/user read and
@@ -15,9 +15,38 @@ while HTTP/2 fetched the same assets normally. Public browser checks use Chromiu
 with `--disable-quic` to separate that network-path issue from rendering correctness.
 This is not evidence of equivalent load times on all devices or networks.
 
-The Pages custom domain `roamflight.wooo.guru` is registered but pending DNS
-verification. The current OAuth session cannot modify DNS records (HTTP 403).
-Create the following record in the `wooo.guru` DNS zone:
+The Pages custom domain `roamflight.wooo.guru` is active: DNS verification,
+certificate validation and HTTPS requests all passed. The one-time OAuth callback
+configured the CNAME automatically after user approval; its temporary Pages secret
+has been removed. The Wrangler Pages
+session cannot modify DNS records, so domain setup now has a separate official
+Cloudflare API MCP OAuth flow. The user approves a link; no token needs to be
+copied and no localhost callback or SSH tunnel is required.
+
+### Click-To-Authorize DNS Setup
+
+`node scripts/start-dns-oauth.mjs` registers a public PKCE client with Cloudflare's
+official API MCP server and places a 30-minute verifier/state configuration in
+the Pages secret `ROAMFLIGHT_DNS_AUTH`. Deploy the callback with
+`npm run deploy:pages`, then share the generated authorization link. Never commit
+the generated `.wrangler/` files or secret configuration.
+
+The approval page requests `dns.read`, `dns.write` and `zone.read`; Cloudflare also
+requires account/user bootstrap scopes. `/auth/callback` validates state, expiry,
+issuer and redirect host, exchanges the code server-side, and executes a fixed
+operation: verify the expected account/zone and create only
+`roamflight.wooo.guru -> roamflight.pages.dev` if absent. Conflicting records are
+never overwritten. Tokens are not returned to the browser or persisted, and access
+token revocation is attempted after use. The callback redirects to a clean status
+page. Only this callback path invokes a Pages Function; the game stays static.
+
+The approval link expires after 30 minutes. Run setup again for a new link if it
+expires. After completion, inspect `npm run domain:status` and verify public HTTPS;
+certificate issuance may lag behind DNS creation.
+
+### Manual Or CI Fallback
+
+The equivalent record is:
 
 Alternatively, let the **Configure Roamflight DNS** GitHub workflow perform this
 step. Create a Cloudflare API token with **Zone / DNS / Edit** and **Zone / Zone /
