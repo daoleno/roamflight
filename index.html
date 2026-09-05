@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#3888bd" />
+    <title>Geographical Adventures</title>
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <main id="game" aria-label="Geographical Adventures flight simulator">
+      <canvas id="world" aria-label="Interactive Earth and aircraft"></canvas>
+      <header id="identity"><span>GEOGRAPHICAL</span><strong>ADVENTURES</strong></header>
+      <div id="toolbar" role="toolbar" aria-label="Flight controls">
+        <button id="view" title="Change camera (C)" aria-label="Change camera">
+          <i data-lucide="camera"></i>
+        </button>
+        <button id="globe" title="World map (M)" aria-label="World map" aria-pressed="false">
+          <i data-lucide="globe-2"></i>
+        </button>
+        <button
+          id="daylight"
+          title="Day / night (N)"
+          aria-label="Day or night"
+          aria-pressed="false"
+        >
+          <i data-lucide="sun"></i>
+        </button>
+        <button id="sound" title="Engine sound" aria-label="Engine sound" aria-pressed="false">
+          <i data-lucide="volume-x"></i>
+        </button>
+        <button id="fullscreen" title="Fullscreen (F)" aria-label="Fullscreen">
+          <i data-lucide="maximize"></i>
+        </button>
+        <button id="pause" title="Pause (Escape)" aria-label="Pause" aria-pressed="false">
+          <i data-lucide="pause"></i>
+        </button>
+      </div>
+      <section id="delivery" aria-label="Current delivery">
+        <span class="eyebrow">DELIVER TO</span>
+        <h1 id="destination">Cape Town</h1>
+        <div id="destination-country">South Africa</div>
+        <div class="delivery-stats">
+          <span id="distance">-- km</span><span id="score">0 delivered</span>
+        </div>
+      </section>
+      <div id="target" aria-hidden="true"><span></span><b id="target-label">Cape Town</b></div>
+      <div id="country">
+        <span id="country-prefix">FLYING OVER</span
+        ><strong id="country-name">South Atlantic Ocean</strong>
+      </div>
+      <div id="compass" aria-label="Compass">
+        <span class="north">N</span><span class="east">E</span><span class="south">S</span
+        ><span class="west">W</span>
+        <div id="needle"></div>
+        <div class="compass-center"></div>
+      </div>
+      <section id="flight-data" aria-label="Flight instruments">
+        <div><strong id="speed">0</strong><span>KM/H</span></div>
+        <hr />
+        <div><strong id="altitude">0</strong><span>M ALT</span></div>
+      </section>
+      <button id="drop" class="drop" title="Drop package (Space)">
+        <i data-lucide="package-open"></i><span>Drop package</span>
+      </button>
+      <div id="notification" role="status" aria-live="polite"></div>
+      <div id="touch-controls">
+        <button id="left" aria-label="Turn left" title="Turn left">
+          <i data-lucide="arrow-left"></i></button
+        ><button id="right" aria-label="Turn right" title="Turn right">
+          <i data-lucide="arrow-right"></i></button
+        ><button id="boost" aria-label="Boost" title="Boost">
+          <i data-lucide="chevrons-up"></i>
+        </button>
+      </div>
+      <dialog id="pause-dialog">
+        <h2>Flight paused</h2>
+        <button id="resume" class="primary"><i data-lucide="play"></i>Resume flight</button
+        ><label
+          >Air speed<input
+            id="throttle"
+            type="range"
+            min="0.3"
+            max="1.7"
+            step="0.05"
+            value="0.75" /></label
+        ><label>Clouds<input id="cloud-toggle" type="checkbox" checked /></label
+        ><label>Country borders<input id="border-toggle" type="checkbox" checked /></label
+        ><label
+          >Departure<select id="departure">
+            <option value="africa">Southern Africa</option>
+            <option value="europe">The Alps</option>
+            <option value="asia">The Himalayas</option>
+            <option value="america">The Andes</option>
+            <option value="oceania">New Zealand</option>
+          </select></label
+        ><button id="restart"><i data-lucide="rotate-ccw"></i>Restart flight</button
+        ><a href="/credits.html" target="_blank" rel="noopener">Credits &amp; sources</a>
+      </dialog>
+      <div id="loading">
+        <div class="loading-title">GEOGRAPHICAL<br /><b>ADVENTURES</b></div>
+        <progress id="load-progress" value="0" max="100"></progress
+        ><span id="load-status">Loading Earth</span>
+      </div>
+      <div id="failure" hidden>
+        <h2>Unable to start the flight</h2>
+        <p id="error-message"></p>
+        <button id="retry">Retry</button>
+      </div>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

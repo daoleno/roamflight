@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Credits - Geographical Adventures Web</title>
+    <style>
+      body {
+        font:
+          16px/1.7 system-ui,
+          sans-serif;
+        margin: 48px auto;
+        padding: 0 24px;
+        max-width: 760px;
+        background: #f5f8f9;
+        color: #263b41;
+      }
+      h1 {
+        font-size: 30px;
+      }
+      h2 {
+        font-size: 19px;
+        margin-top: 28px;
+      }
+      a {
+        color: #116987;
+      }
+      li {
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/">Return to flight</a>
+    <h1>Credits &amp; Sources</h1>
+    <p>
+      This is an independent browser adaptation of Sebastian Lague's Geographical Adventures. It is
+      not an official release, not a Unity WebGL build, and not a pixel-identical reproduction of
+      the original video.
+    </p>
+    <h2>Original Work</h2>
+    <ul>
+      <li>
+        <a href="https://youtu.be/sLqXFF8mlEU"
+          >I Tried Creating a Game Using Real-World Geographic Data</a
+        >, Sebastian Lague.
+      </li>
+      <li>
+        <a href="https://github.com/SebLague/Geographical-Adventures"
+          >Geographical Adventures source project</a
+        >. Terrain meshes, border paths, Earth colour and normal textures, aircraft model, country
+        data, ocean textures and font were taken from the publicly available project.
+      </li>
+      <li>
+        <a href="/assets/LICENSE-original.txt">Original project MIT license</a>, copyright Sebastian
+        Lague. The current public main branch is used; it contains changes made after the first
+        development video.
+      </li>
+      <li>
+        <a href="https://sebastian.itch.io/geographical-adventures">Play the original native game</a
+        >.
+      </li>
+    </ul>
+    <h2>Geographical Data</h2>
+    <p>
+      The original project credits <a href="https://www.naturalearthdata.com/">Natural Earth</a>,
+      <a href="https://www.gebco.net/">GEBCO</a>, and
+      <a href="https://visibleearth.nasa.gov/collection/1484/blue-marble">NASA Blue Marble</a>.
+      Geographic borders are shown as supplied in that historical dataset.
+    </p>
+    <h2>Browser Implementation</h2>
+    <p>
+      Three.js (MIT), three-mesh-bvh (MIT), d3-geo (ISC), Lucide (ISC), and Vite (MIT). Cloud
+      geometry, atmosphere and ocean shading, ships, parachute animation, flight controller and
+      delivery UI are browser implementations and differ from the original Unity renderer. Engine
+      audio is synthesized locally; no music or audio from the video is included.
+    </p>
+  </body>
+</html>

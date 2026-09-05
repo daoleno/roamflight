@@ -1,0 +1,591 @@
+@font-face {
+  font-family: Montserrat;
+  src: url('/assets/font.ttf') format('truetype');
+  font-display: swap;
+  font-weight: 700;
+}
+:root {
+  font-family: Montserrat, Arial, sans-serif;
+  color: #fff;
+  font-synthesis: none;
+  font-weight: 700;
+  letter-spacing: 0;
+  background: #3679ba;
+}
+* {
+  box-sizing: border-box;
+  letter-spacing: 0;
+}
+body {
+  margin: 0;
+  overflow: hidden;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:focus-visible,
+a:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 3px solid #ffda4b;
+  outline-offset: 4px;
+}
+button svg {
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+#game {
+  width: 100%;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+#world {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+#identity {
+  position: absolute;
+  top: 26px;
+  left: 30px;
+  text-shadow: 0 2px 8px #13384b85;
+  pointer-events: none;
+  line-height: 1.05;
+}
+#identity span {
+  font-size: 13px;
+  display: block;
+}
+#identity strong {
+  font-size: 21px;
+}
+#toolbar {
+  position: absolute;
+  top: 23px;
+  right: 24px;
+  display: flex;
+  gap: 6px;
+}
+#toolbar button {
+  border: 0;
+  background: #12374235;
+  width: 39px;
+  height: 39px;
+  color: #fff;
+  border-radius: 50%;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s;
+}
+#toolbar button:hover,
+#toolbar button[aria-pressed='true'] {
+  background: #1237429c;
+}
+#delivery {
+  position: absolute;
+  top: 105px;
+  left: 30px;
+  text-shadow: 0 2px 6px #103f53a0;
+  max-width: 280px;
+  pointer-events: none;
+}
+.eyebrow {
+  font-size: 11px;
+  opacity: 0.8;
+}
+h1 {
+  font-size: 28px;
+  line-height: 1.15;
+  margin: 7px 0 3px;
+}
+#destination-country {
+  font-size: 14px;
+}
+.delivery-stats {
+  display: flex;
+  gap: 22px;
+  font-size: 11px;
+  opacity: 0.9;
+  margin-top: 15px;
+}
+#country {
+  position: absolute;
+  left: 50%;
+  bottom: 35px;
+  transform: translateX(-50%);
+  text-align: center;
+  text-shadow: 0 2px 10px #071c38;
+  pointer-events: none;
+  max-width: 45%;
+}
+#country-prefix {
+  display: block;
+  font-size: 10px;
+  opacity: 0.8;
+  margin-bottom: 5px;
+}
+#country-name {
+  display: block;
+  font-size: 24px;
+}
+#compass {
+  position: absolute;
+  bottom: 29px;
+  left: 32px;
+  width: 92px;
+  height: 92px;
+  border: 1.5px solid #ffffff80;
+  border-radius: 50%;
+  background: #133c5130;
+  text-shadow: 0 1px 3px #163541;
+  font-size: 11px;
+}
+#compass > span {
+  position: absolute;
+}
+.north {
+  top: 5px;
+  left: 40px;
+}
+.south {
+  bottom: 4px;
+  left: 40px;
+}
+.east {
+  right: 6px;
+  top: 38px;
+}
+.west {
+  left: 6px;
+  top: 38px;
+}
+#needle {
+  position: absolute;
+  left: 39px;
+  top: 19px;
+  width: 12px;
+  height: 50px;
+  transform-origin: 50% 50%;
+  clip-path: polygon(50% 0, 100% 100%, 50% 75%, 0 100%);
+  background: linear-gradient(to bottom, #f44c3c 0 50%, #fff 50% 100%);
+}
+.compass-center {
+  position: absolute;
+  top: 41px;
+  left: 41px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+}
+#flight-data {
+  position: absolute;
+  bottom: 37px;
+  left: 149px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-shadow: 0 2px 6px #153449a0;
+}
+#flight-data div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 58px;
+}
+#flight-data strong {
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+#flight-data span {
+  font-size: 9px;
+  opacity: 0.75;
+}
+#flight-data hr {
+  height: 34px;
+  width: 1px;
+  border: 0;
+  background: #ffffff50;
+  margin: 0;
+}
+.drop {
+  position: absolute;
+  bottom: 38px;
+  right: 30px;
+  background: #ffdb42;
+  color: #383324;
+  border: 0;
+  border-radius: 4px;
+  min-height: 46px;
+  padding: 0 19px;
+  font-size: 12px;
+  box-shadow: 0 3px 10px #12384b33;
+}
+.drop:hover {
+  background: #ffe776;
+}
+.drop:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+#target {
+  position: absolute;
+  pointer-events: none;
+  display: none;
+  text-align: center;
+  transform: translate(-50%, -50%);
+  text-shadow: 0 2px 5px #163b47;
+}
+#target > span {
+  display: block;
+  margin: auto;
+  width: 15px;
+  height: 15px;
+  background: #fff;
+  border: 3px solid #ffda51;
+  border-radius: 50%;
+  box-shadow: 0 0 0 7px #ffffff20;
+}
+#target > b {
+  display: block;
+  font-size: 11px;
+  margin-top: 12px;
+  white-space: nowrap;
+}
+#notification {
+  position: absolute;
+  top: 27%;
+  left: 50%;
+  transform: translate(-50%, -10px);
+  opacity: 0;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
+  pointer-events: none;
+  text-shadow: 0 2px 10px #0e3446;
+  text-align: center;
+  max-width: 85%;
+  font-size: 20px;
+}
+#notification.visible {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+#touch-controls {
+  display: none;
+  position: absolute;
+  bottom: 108px;
+  left: 24px;
+  gap: 12px;
+}
+#touch-controls button {
+  width: 51px;
+  height: 51px;
+  border: 1px solid #ffffff70;
+  background: #123c5150;
+  border-radius: 50%;
+  color: white;
+  touch-action: none;
+  user-select: none;
+}
+#touch-controls button:active {
+  background: #ffffff50;
+}
+#loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 23px;
+  background: #3375b1;
+  transition: opacity 0.6s;
+  z-index: 20;
+}
+.loading-title {
+  text-align: center;
+  font-size: 20px;
+  line-height: 1.2;
+}
+.loading-title b {
+  font-size: 34px;
+}
+progress {
+  width: 220px;
+  height: 3px;
+  appearance: none;
+  border: 0;
+  background: #ffffff30;
+}
+progress::-webkit-progress-bar {
+  background: #ffffff30;
+}
+progress::-webkit-progress-value {
+  background: #ffdc43;
+}
+#load-status {
+  font-size: 11px;
+  color: #ffffffb5;
+}
+#loading.done {
+  opacity: 0;
+  pointer-events: none;
+}
+#failure {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  padding: 30px;
+  background: #233843;
+  text-align: center;
+  padding-top: 30vh;
+}
+#failure[hidden] {
+  display: none;
+}
+#failure p {
+  font-family: Arial, sans-serif;
+}
+dialog {
+  width: 330px;
+  border: 1px solid #ffffff30;
+  border-radius: 8px;
+  background: #183e4be8;
+  backdrop-filter: blur(20px);
+  color: #fff;
+  padding: 26px;
+  box-shadow: 0 15px 70px #05192150;
+  max-height: 90dvh;
+  overflow: auto;
+}
+dialog::backdrop {
+  background: #061c2835;
+}
+dialog h2 {
+  font-size: 24px;
+  margin: 0 0 23px;
+}
+dialog button {
+  width: 100%;
+  min-height: 43px;
+  border: 1px solid #ffffff40;
+  border-radius: 4px;
+  background: transparent;
+  color: #fff;
+  font-size: 12px;
+}
+dialog button.primary {
+  background: #ffdb42;
+  color: #34352b;
+  border: 0;
+  margin-bottom: 16px;
+}
+dialog label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+  font-size: 12px;
+  gap: 12px;
+}
+dialog input[type='range'] {
+  width: 125px;
+  accent-color: #ffdb42;
+}
+dialog input[type='checkbox'] {
+  width: 17px;
+  height: 17px;
+  accent-color: #ffdb42;
+}
+dialog select {
+  max-width: 147px;
+  background: #234956;
+  color: white;
+  border: 1px solid #ffffff40;
+  border-radius: 3px;
+  padding: 6px;
+  font-size: 11px;
+}
+dialog a {
+  display: block;
+  font-size: 10px;
+  color: #c2d9e1;
+  text-align: center;
+  margin-top: 20px;
+  text-underline-offset: 3px;
+}
+.map-mode #country,
+.map-mode #flight-data,
+.map-mode #compass {
+  opacity: 0;
+}
+.map-mode #identity {
+  display: block;
+}
+#loading[hidden] {
+  display: none;
+}
+@media (pointer: coarse) {
+  #touch-controls {
+    display: flex;
+  }
+}
+@media (max-width: 700px) {
+  #identity {
+    top: 20px;
+    left: 19px;
+  }
+  #identity span {
+    font-size: 10px;
+  }
+  #identity strong {
+    font-size: 15px;
+  }
+  #toolbar {
+    top: 15px;
+    right: 12px;
+    gap: 2px;
+  }
+  #toolbar button {
+    width: 32px;
+    height: 32px;
+  }
+  #toolbar button svg {
+    width: 17px;
+    height: 17px;
+  }
+  #sound,
+  #fullscreen {
+    display: none !important;
+  }
+  #delivery {
+    top: 83px;
+    left: 19px;
+    max-width: 190px;
+  }
+  h1 {
+    font-size: 24px;
+  }
+  #destination-country {
+    font-size: 12px;
+  }
+  .delivery-stats {
+    font-size: 10px;
+    gap: 15px;
+  }
+  #country {
+    bottom: 154px;
+    max-width: 85%;
+    width: max-content;
+  }
+  #country-name {
+    font-size: 21px;
+  }
+  #compass {
+    bottom: 25px;
+    left: 19px;
+    width: 74px;
+    height: 74px;
+  }
+  .north {
+    left: 31px !important;
+    top: 3px !important;
+  }
+  .south {
+    left: 31px !important;
+    bottom: 2px !important;
+  }
+  .east {
+    right: 4px !important;
+    top: 29px !important;
+  }
+  .west {
+    left: 4px !important;
+    top: 29px !important;
+  }
+  #needle {
+    left: 30px;
+    top: 11px;
+  }
+  .compass-center {
+    left: 32px;
+    top: 32px;
+  }
+  #flight-data {
+    left: 108px;
+    bottom: 35px;
+    gap: 10px;
+  }
+  #flight-data div {
+    min-width: 40px;
+  }
+  #flight-data strong {
+    font-size: 20px;
+  }
+  #flight-data span {
+    font-size: 8px;
+  }
+  .drop {
+    right: 17px;
+    bottom: 35px;
+    width: 48px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0;
+    border-radius: 50%;
+  }
+  .drop > span {
+    display: none;
+  }
+  #touch-controls {
+    bottom: 109px;
+    left: 19px;
+    gap: 10px;
+  }
+  #touch-controls button {
+    width: 42px;
+    height: 42px;
+  }
+  #touch-controls #boost {
+    position: fixed;
+    right: 20px;
+    bottom: 102px;
+  }
+  #notification {
+    font-size: 17px;
+    top: 31%;
+    width: 90%;
+  }
+}
+@media (max-height: 520px) and (min-width: 701px) {
+  #delivery {
+    top: 83px;
+  }
+  #country {
+    bottom: 26px;
+  }
+  #touch-controls {
+    bottom: 140px;
+  }
+  #flight-data {
+    bottom: 32px;
+  }
+}
