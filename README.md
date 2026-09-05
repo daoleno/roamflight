@@ -84,6 +84,21 @@ to silence. Use the device volume for overall loudness; old mixer preferences ar
 ignored. Packages landing within 190 km of a destination count as successful in
 this early prototype.
 
+## Languages And CDN
+
+The interface automatically selects Simplified Chinese or English from the browser's
+preferred languages; unmatched languages fall back to English. The same static HTML
+and bundled dictionaries are served to everyone. No IP detection, language cookie,
+locale redirect, server rendering or `Vary: Accept-Language` is used.
+
+Game text, controls, notifications, destination names, country labels and supporting
+pages are localized. Internal geographical names and mission identifiers do not
+change. A browser language-change event updates labels without reloading the world.
+
+The shared language module and app code are content-hashed under `/app/` and cached
+for one year with `immutable`. Geography remains under `/assets/`, so changing copy
+does not invalidate terrain or textures. HTML revalidates to pick up new asset hashes.
+
 ## Verification
 
 Node tests cover geography, spherical movement, propeller pivots, the audio preset,
@@ -108,7 +123,7 @@ deployment has a separate, explicitly triggered workflow with scoped credentials
 - [Architecture](docs/ARCHITECTURE.md): rendering, data, audio and runtime boundaries.
 - [Deployment](docs/DEPLOYMENT.md): Cloudflare Pages, local systemd and Docker.
 - [Contributing](CONTRIBUTING.md): development and verification expectations.
-- [Credits](public/credits.html): original work and asset attribution.
+- [Credits](credits.html): original work and asset attribution.
 
 ## Origins And Attribution
 

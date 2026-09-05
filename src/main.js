@@ -26,6 +26,7 @@ import { rotatePropeller } from './aircraft.js';
 import { FlightAudio } from './audio.js';
 import { stepFlight } from './flight.js';
 import { updateControlSurfaces } from './control-surfaces.js';
+import { t, number, cityName, countryName, setCountryData, getLocale } from './i18n.js';
 import {
   RADIUS,
   DEG,
@@ -122,18 +123,30 @@ let orbit,
   trails,
   cameraInitialized = false;
 
-function notify(text, duration = 3300) {
+let lastNotice = null;
+let loadingKey = 'loading.earth';
+let failureKey = 'errors.startup';
+function renderNotice() {
+  if (!lastNotice) return;
+  const values = { ...lastNotice.values };
+  if (values.city) values.city = cityName(values.city);
+  if (values.distance !== undefined) values.distance = number(values.distance);
+  $('notification').textContent = t(lastNotice.key, values);
+}
+function notify(key, values = {}, duration = 3300) {
   clearTimeout(notificationTimeout);
-  $('notification').textContent = text;
+  lastNotice = { key, values };
+  renderNotice();
   $('notification').classList.add('visible');
   notificationTimeout = setTimeout(() => $('notification').classList.remove('visible'), duration);
 }
 
-function failure(error) {
+function failure(error, key = 'errors.startup') {
   console.error(error);
   $('failure').hidden = false;
   $('loading').classList.add('done');
-  $('error-message').textContent = error?.message || 'WebGL initialization failed.';
+  failureKey = key;
+  $('error-message').textContent = t(key);
 }
 
 async function start() {
@@ -152,13 +165,11 @@ async function start() {
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     world = await createWorld(renderer, scene, (value) => {
       $('load-progress').value = value;
-      $('load-status').textContent =
-        value < 60
-          ? 'Loading Earth textures'
-          : value < 80
-            ? 'Building terrain'
-            : 'Preparing flight';
+      loadingKey =
+        value < 60 ? 'loading.textures' : value < 80 ? 'loading.terrain' : 'loading.flight';
+      $('load-status').textContent = t(loadingKey);
     });
+    setCountryData(world.countries);
     orbit = new OrbitControls(camera, canvas);
     orbit.enabled = false;
     orbit.enableDamping = true;
@@ -181,6 +192,7 @@ async function start() {
       get state() {
         return {
           ready: state.ready,
+          locale: getLocale(),
           paused: state.paused,
           map: state.map,
           view: state.view,
@@ -253,9 +265,9 @@ function createMarker() {
 }
 
 function updateMission() {
-  $('destination').textContent = state.target[0];
-  $('destination-country').textContent = state.target[1];
-  $('target-label').textContent = state.target[0];
+  $('destination').textContent = cityName(state.target[0]);
+  $('destination-country').textContent = countryName(state.target[1]);
+  $('target-label').textContent = cityName(state.target[0]);
   const up = toPoint(state.target[2], state.target[3]);
   const radius = world.groundRadius(up);
   marker.position.copy(up).multiplyScalar(radius + 0.07);
@@ -304,7 +316,7 @@ function setPaused(value) {
   keys.clear();
   $('pause').setAttribute('aria-pressed', String(value));
   setIcon('pause', value ? 'play' : 'pause');
-  $('pause').setAttribute('aria-label', value ? 'Resume' : 'Pause');
+  syncControlLabels();
   if (value && !$('pause-dialog').open) $('pause-dialog').showModal();
   if (!value && $('pause-dialog').open) $('pause-dialog').close();
 }
@@ -362,7 +374,7 @@ function dropPackage() {
   state.packages.push(item);
   audio.play('drop');
   if (state.packages.length > 12) disposePackage(state.packages.shift());
-  notify('Package away', 1500);
+  notify('notice.drop', {}, 1500);
 }
 
 function disposePackage(p) {
@@ -395,12 +407,12 @@ function updatePackages(dt) {
         if (p.error < 190 && current) {
           state.delivered++;
           audio.play('success');
-          notify(`${p.deliveryTarget[0]} delivery complete!`, 4000);
+          notify('notice.success', { city: p.deliveryTarget[0] }, 4000);
           state.target = [...destinations[nextMission++ % destinations.length]];
           updateMission();
         } else if (current) {
           audio.play('miss');
-          notify(`${Math.round(p.error)} km from ${p.deliveryTarget[0]}`, 3600);
+          notify('notice.miss', { distance: p.error, city: p.deliveryTarget[0] }, 3600);
         }
       }
     } else {
@@ -561,19 +573,21 @@ function updateHud() {
   state.countryId = world.names.indexOf(state.country);
   world.uniforms.selected.value = state.countryId;
   state.distance = distanceKm(coordinate, [state.target[2], state.target[3]]);
-  $('distance').textContent = `${Math.round(state.distance).toLocaleString('en')} km`;
-  $('score').textContent = `${state.delivered} delivered`;
+  $('distance').textContent = t('hud.distance', { distance: number(state.distance) });
+  $('score').textContent = t('hud.delivered', { count: number(state.delivered) });
   $('country-name').textContent =
-    state.country ||
-    (Math.abs(coordinate[1]) > 65
-      ? 'Polar Ocean'
-      : coordinate[0] > 30 && coordinate[0] < 120
-        ? 'Indian Ocean'
-        : coordinate[0] > 120 || coordinate[0] < -70
-          ? 'Pacific Ocean'
-          : 'Atlantic Ocean');
-  $('speed').textContent = Math.round(state.speed * 235).toString();
-  $('altitude').textContent = Math.round((state.radius - ground) * 500).toLocaleString('en');
+    countryName(state.country) ||
+    t(
+      Math.abs(coordinate[1]) > 65
+        ? 'ocean.polar'
+        : coordinate[0] > 30 && coordinate[0] < 120
+          ? 'ocean.indian'
+          : coordinate[0] > 120 || coordinate[0] < -70
+            ? 'ocean.pacific'
+            : 'ocean.atlantic',
+    );
+  $('speed').textContent = number(state.speed * 235);
+  $('altitude').textContent = number((state.radius - ground) * 500);
   $('needle').style.transform = `rotate(${-headingDegrees(state.up, state.forward)}deg)`;
   $('drop').disabled = state.map || state.paused || state.elapsed - state.lastDrop < 1.2;
 }
@@ -685,13 +699,12 @@ async function toggleSound(value = !audio.enabled) {
     audio.setActivity(state.ready && !state.paused && !document.hidden);
     await audio.setEnabled(value);
   } catch {
-    notify('Audio is unavailable. Tap the sound button to retry.');
+    notify('errors.audio');
   } finally {
     audioBusy = false;
     $('sound').disabled = false;
     $('sound').setAttribute('aria-pressed', String(audio.enabled));
-    $('sound').setAttribute('aria-label', audio.enabled ? 'Mute audio' : 'Enable audio');
-    $('sound').title = audio.enabled ? 'Mute audio' : 'Enable audio';
+    syncControlLabels();
     setIcon('sound', audio.enabled ? 'volume-2' : 'volume-x');
   }
 }
@@ -701,7 +714,7 @@ async function fullscreen() {
     if (document.fullscreenElement) await document.exitFullscreen();
     else await $('game').requestFullscreen();
   } catch {
-    notify('Fullscreen is unavailable in this browser');
+    notify('errors.fullscreen');
   }
 }
 
@@ -734,9 +747,42 @@ $('restart').onclick = () => {
   setDeparture($('departure').value);
   setPaused(false);
 };
-document.addEventListener('fullscreenchange', () =>
-  setIcon('fullscreen', document.fullscreenElement ? 'minimize' : 'maximize'),
-);
+function syncControlLabels() {
+  for (const [id, label, title] of [
+    [
+      'pause',
+      state.paused ? 'controls.resume' : 'controls.pause',
+      state.paused ? 'controls.resumeTitle' : 'controls.pauseTitle',
+    ],
+    [
+      'sound',
+      audio.enabled ? 'controls.muteAudio' : 'controls.enableAudio',
+      audio.enabled ? 'controls.muteAudio' : 'controls.enableAudio',
+    ],
+    [
+      'fullscreen',
+      document.fullscreenElement ? 'controls.exitFullscreen' : 'controls.fullscreen',
+      document.fullscreenElement ? 'controls.exitFullscreenTitle' : 'controls.fullscreenTitle',
+    ],
+  ]) {
+    $(id).setAttribute('aria-label', t(label));
+    $(id).title = t(title);
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  setIcon('fullscreen', document.fullscreenElement ? 'minimize' : 'maximize');
+  syncControlLabels();
+});
+window.addEventListener('roamflight:language', () => {
+  syncControlLabels();
+  $('load-status').textContent = t(loadingKey);
+  if (!$('failure').hidden) $('error-message').textContent = t(failureKey);
+  if (world && marker) {
+    updateMission();
+    updateHud();
+  }
+  renderNotice();
+});
 window.addEventListener('keydown', (e) => {
   if (['INPUT', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) return;
   if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code))
@@ -810,6 +856,6 @@ window.addEventListener('resize', () => {
 canvas.addEventListener('webglcontextlost', (e) => {
   e.preventDefault();
   renderer?.setAnimationLoop(null);
-  failure(new Error('Graphics context lost. Reload the page to resume.'));
+  failure(new Error('Graphics context lost. Reload the page to resume.'), 'errors.context');
 });
 start();

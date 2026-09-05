@@ -118,6 +118,12 @@ and checks every asset against a conservative 25 MiB per-file and 20,000-file bu
 `_headers` supplies security/cache headers; `_redirects` maps `/healthz` to generated
 health metadata. `404.html` prevents missing assets from returning the game HTML.
 
+Chinese and English share exactly the same static HTML. Browser preferences select
+the bundled text locally, with no `Accept-Language` variation or language redirect.
+Hashed scripts, styles and the shared locale chunk are under `/app/` with a one-year
+immutable cache. Non-hashed geographical data remains under `/assets/` with its
+separate cache policy. New text releases do not invalidate terrain or texture URLs.
+
 After deployment, verify the root page, `/healthz`, `/credits.html`, actual model
 and texture loads, and a real 404. Run the browser tests against the returned URL.
 

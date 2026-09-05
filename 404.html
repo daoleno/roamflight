@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Not Found | Roamflight</title>
+    <link rel="icon" href="data:," />
+    <title data-i18n="page.notFoundTitle">Not Found | Roamflight</title>
     <style>
       body {
         margin: 0;
@@ -31,8 +32,9 @@
   <body>
     <main>
       <h1>Roamflight</h1>
-      <p>This destination could not be found.</p>
-      <a href="/">Return to flight</a>
+      <p data-i18n="page.notFound">This destination could not be found.</p>
+      <a href="/" data-i18n="page.return">Return to flight</a>
     </main>
+    <script type="module" src="/src/i18n.js"></script>
   </body>
 </html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title data-i18n="credits.title">Credits - Roamflight</title>
+    <style>
+      body {
+        font:
+          16px/1.7 system-ui,
+          sans-serif;
+        margin: 48px auto;
+        padding: 0 24px;
+        max-width: 760px;
+        background: #f5f8f9;
+        color: #263b41;
+        overflow-wrap: anywhere;
+      }
+      h1 {
+        font-size: 30px;
+      }
+      h2 {
+        font-size: 19px;
+        margin-top: 28px;
+      }
+      a {
+        color: #116987;
+      }
+      li {
+        margin: 8px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <a href="/" data-i18n="page.return">Return to flight</a>
+    <h1 data-i18n="credits.heading">Credits &amp; Sources</h1>
+    <p>
+      <span data-i18n="credits.licensePrefix">Roamflight is released under the </span
+      ><a href="/LICENSE.txt" data-i18n="credits.mit">MIT License</a>.
+    </p>
+    <p data-i18n="credits.intro">
+      Roamflight is an independent flight exploration game, initially adapted from Sebastian Lague's
+      Geographical Adventures. It is not an official release, not a Unity WebGL build, and not a
+      pixel-identical reproduction of the original video.
+    </p>
+    <h2 data-i18n="credits.original">Original Work</h2>
+    <ul>
+      <li>
+        <a href="https://youtu.be/sLqXFF8mlEU" data-i18n="credits.video"
+          >I Tried Creating a Game Using Real-World Geographic Data</a
+        >, Sebastian Lague.
+      </li>
+      <li>
+        <a href="https://github.com/SebLague/Geographical-Adventures" data-i18n="credits.source"
+          >Geographical Adventures source project</a
+        >.
+        <span data-i18n="credits.assets"
+          >Terrain meshes, border paths, Earth colour and normal textures, aircraft model, country
+          data, ocean textures and font were taken from the publicly available project.</span
+        >
+      </li>
+      <li>
+        <a href="/assets/LICENSE-original.txt" data-i18n="credits.upstreamLicense"
+          >Original project MIT license</a
+        >.
+        <span data-i18n="credits.upstreamNote"
+          >Copyright Sebastian Lague. Source assets are pinned to commit
+          82fcda20bebb033c749b2339e9ce3a6e58007699.</span
+        >
+      </li>
+      <li>
+        <a href="https://sebastian.itch.io/geographical-adventures" data-i18n="credits.playOriginal"
+          >Play the original native game</a
+        >.
+      </li>
+    </ul>
+    <h2 data-i18n="credits.geography">Geographical Data</h2>
+    <p>
+      <span data-i18n="credits.geoPrefix">The original project credits </span
+      ><a href="https://www.naturalearthdata.com/">Natural Earth</a>,
+      <a href="https://www.gebco.net/">GEBCO</a>, <span data-i18n="credits.and">and</span>
+      <a href="https://visibleearth.nasa.gov/collection/1484/blue-marble">NASA Blue Marble</a>.
+      <span data-i18n="credits.geoNote"
+        >Geographic borders are shown as supplied in that historical dataset.</span
+      >
+    </p>
+    <h2 data-i18n="credits.browser">Browser Implementation</h2>
+    <p data-i18n="credits.implementation">
+      Three.js (MIT), three-mesh-bvh (MIT), d3-geo (ISC), Lucide (ISC), and Vite (MIT). Cloud
+      geometry, atmosphere and ocean shading, ships, parachute animation, flight controller and
+      delivery UI are browser implementations and differ from the original Unity renderer. Engine
+      audio, environmental ambience, background harmonies and gameplay cues are synthesized locally;
+      no music or audio recordings from the video are included.
+    </p>
+    <script type="module" src="/src/i18n.js"></script>
+  </body>
+</html>

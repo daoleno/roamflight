@@ -4,28 +4,57 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#3888bd" />
-    <title>Roamflight | &#x6f2b;&#x822a;</title>
+    <title data-i18n="app.title">Roamflight | &#x6f2b;&#x822a;</title>
+    <link rel="canonical" href="https://roamflight.wooo.guru/" />
     <meta
       name="description"
+      data-i18n-content="app.description"
       content="Explore the real world from your own aircraft. Discover new journeys between cities, mountains and coastlines."
     />
-    <meta property="og:title" content="Roamflight | &#x6f2b;&#x822a;" />
+    <meta
+      property="og:title"
+      data-i18n-content="app.title"
+      content="Roamflight | &#x6f2b;&#x822a;"
+    />
     <meta
       property="og:description"
+      data-i18n-content="app.description"
       content="Explore the real world from your own aircraft. Discover new journeys between cities, mountains and coastlines."
     />
     <meta property="og:type" content="website" />
     <link rel="icon" href="data:," />
   </head>
   <body>
-    <main id="game" aria-label="Roamflight flight exploration game">
-      <canvas id="world" aria-label="Interactive Earth and aircraft"></canvas>
+    <main id="game" aria-label="Roamflight flight exploration game" data-i18n-aria="app.game">
+      <canvas
+        id="world"
+        aria-label="Interactive Earth and aircraft"
+        data-i18n-aria="app.canvas"
+      ></canvas>
       <header id="identity"><span>&#x6f2b;&#x822a;</span><strong>ROAMFLIGHT</strong></header>
-      <div id="toolbar" role="toolbar" aria-label="Flight controls">
-        <button id="view" title="Change camera (C)" aria-label="Change camera">
+      <div
+        id="toolbar"
+        role="toolbar"
+        aria-label="Flight controls"
+        data-i18n-aria="controls.toolbar"
+      >
+        <button
+          id="view"
+          title="Change camera (C)"
+          aria-label="Change camera"
+          data-i18n-title="controls.cameraTitle"
+          data-i18n-aria="controls.camera"
+        >
           <i data-lucide="camera"></i>
         </button>
-        <button id="globe" title="World map (M)" aria-label="World map" aria-pressed="false">
+        <button
+          id="globe"
+          title="World map (M)"
+          aria-label="World map"
+          aria-pressed="false"
+          data-i18n-title="controls.mapTitle"
+          data-i18n-aria="controls.map"
+        >
           <i data-lucide="globe-2"></i>
         </button>
         <button
@@ -33,21 +62,43 @@
           title="Day / night (N)"
           aria-label="Day or night"
           aria-pressed="false"
+          data-i18n-title="controls.daylightTitle"
+          data-i18n-aria="controls.daylight"
         >
           <i data-lucide="sun"></i>
         </button>
-        <button id="sound" title="Enable audio" aria-label="Enable audio" aria-pressed="false">
+        <button
+          id="sound"
+          title="Enable audio"
+          aria-label="Enable audio"
+          aria-pressed="false"
+          data-i18n-title="controls.enableAudio"
+          data-i18n-aria="controls.enableAudio"
+        >
           <i data-lucide="volume-x"></i>
         </button>
-        <button id="fullscreen" title="Fullscreen (F)" aria-label="Fullscreen">
+        <button
+          id="fullscreen"
+          title="Fullscreen (F)"
+          aria-label="Fullscreen"
+          data-i18n-title="controls.fullscreenTitle"
+          data-i18n-aria="controls.fullscreen"
+        >
           <i data-lucide="maximize"></i>
         </button>
-        <button id="pause" title="Pause (Escape)" aria-label="Pause" aria-pressed="false">
+        <button
+          id="pause"
+          title="Pause (Escape)"
+          aria-label="Pause"
+          aria-pressed="false"
+          data-i18n-title="controls.pauseTitle"
+          data-i18n-aria="controls.pause"
+        >
           <i data-lucide="pause"></i>
         </button>
       </div>
-      <section id="delivery" aria-label="Current delivery">
-        <span class="eyebrow">DELIVER TO</span>
+      <section id="delivery" aria-label="Current delivery" data-i18n-aria="hud.delivery">
+        <span class="eyebrow" data-i18n="hud.deliverTo">DELIVER TO</span>
         <h1 id="destination">Cape Town</h1>
         <div id="destination-country">South Africa</div>
         <div class="delivery-stats">
@@ -56,75 +107,118 @@
       </section>
       <div id="target" aria-hidden="true"><span></span><b id="target-label">Cape Town</b></div>
       <div id="country">
-        <span id="country-prefix">FLYING OVER</span
+        <span id="country-prefix" data-i18n="hud.flyingOver">FLYING OVER</span
         ><strong id="country-name">South Atlantic Ocean</strong>
       </div>
-      <div id="compass" aria-label="Compass">
-        <span class="north">N</span><span class="east">E</span><span class="south">S</span
-        ><span class="west">W</span>
+      <div id="compass" aria-label="Compass" data-i18n-aria="hud.compass">
+        <span class="north" data-i18n="hud.north">N</span
+        ><span class="east" data-i18n="hud.east">E</span
+        ><span class="south" data-i18n="hud.south">S</span
+        ><span class="west" data-i18n="hud.west">W</span>
         <div id="needle"></div>
         <div class="compass-center"></div>
       </div>
-      <section id="flight-data" aria-label="Flight instruments">
-        <div><strong id="speed">0</strong><span>KM/H</span></div>
+      <section id="flight-data" aria-label="Flight instruments" data-i18n-aria="hud.instruments">
+        <div><strong id="speed">0</strong><span data-i18n="hud.speedUnit">KM/H</span></div>
         <hr />
-        <div><strong id="altitude">0</strong><span>M ALT</span></div>
+        <div><strong id="altitude">0</strong><span data-i18n="hud.altitudeUnit">M ALT</span></div>
       </section>
-      <button id="drop" class="drop" title="Drop package (Space)">
-        <i data-lucide="package-open"></i><span>Drop package</span>
+      <button
+        id="drop"
+        class="drop"
+        title="Drop package (Space)"
+        data-i18n-title="controls.dropTitle"
+        data-i18n-aria="controls.drop"
+      >
+        <i data-lucide="package-open"></i><span data-i18n="controls.drop">Drop package</span>
       </button>
       <div id="notification" role="status" aria-live="polite"></div>
       <div id="touch-controls">
-        <button id="left" aria-label="Turn left" title="Turn left">
+        <button
+          id="left"
+          aria-label="Turn left"
+          title="Turn left"
+          data-i18n-title="controls.left"
+          data-i18n-aria="controls.left"
+        >
           <i data-lucide="arrow-left"></i></button
-        ><button id="right" aria-label="Turn right" title="Turn right">
+        ><button
+          id="right"
+          aria-label="Turn right"
+          title="Turn right"
+          data-i18n-title="controls.right"
+          data-i18n-aria="controls.right"
+        >
           <i data-lucide="arrow-right"></i></button
-        ><button id="boost" aria-label="Boost" title="Boost">
+        ><button
+          id="boost"
+          aria-label="Boost"
+          title="Boost"
+          data-i18n-title="controls.boost"
+          data-i18n-aria="controls.boost"
+        >
           <i data-lucide="chevrons-up"></i>
         </button>
       </div>
-      <div id="altitude-controls" aria-label="Altitude controls">
-        <button id="climb" aria-label="Climb" title="Climb (E)">
+      <div id="altitude-controls" aria-label="Altitude controls" data-i18n-aria="controls.altitude">
+        <button
+          id="climb"
+          aria-label="Climb"
+          title="Climb (E)"
+          data-i18n-title="controls.climbTitle"
+          data-i18n-aria="controls.climb"
+        >
           <i data-lucide="arrow-up"></i>
         </button>
-        <button id="descend" aria-label="Descend" title="Descend (Q)">
+        <button
+          id="descend"
+          aria-label="Descend"
+          title="Descend (Q)"
+          data-i18n-title="controls.descendTitle"
+          data-i18n-aria="controls.descend"
+        >
           <i data-lucide="arrow-down"></i>
         </button>
       </div>
       <dialog id="pause-dialog">
-        <h2>Flight paused</h2>
-        <button id="resume" class="primary"><i data-lucide="play"></i>Resume flight</button
+        <h2 data-i18n="menu.paused">Flight paused</h2>
+        <button id="resume" class="primary">
+          <i data-lucide="play"></i><span data-i18n="controls.resume">Resume flight</span></button
         ><label
-          >Air speed<input
-            id="throttle"
-            type="range"
-            min="0.3"
-            max="1.7"
-            step="0.05"
-            value="0.75" /></label
-        ><label>Clouds<input id="cloud-toggle" type="checkbox" checked /></label
-        ><label>Country borders<input id="border-toggle" type="checkbox" checked /></label
+          ><span data-i18n="menu.speed">Air speed</span
+          ><input id="throttle" type="range" min="0.3" max="1.7" step="0.05" value="0.75" /></label
         ><label
-          >Departure<select id="departure">
-            <option value="africa">Southern Africa</option>
-            <option value="europe">The Alps</option>
-            <option value="asia">The Himalayas</option>
-            <option value="america">The Andes</option>
-            <option value="oceania">New Zealand</option>
+          ><span data-i18n="menu.clouds">Clouds</span
+          ><input id="cloud-toggle" type="checkbox" checked /></label
+        ><label
+          ><span data-i18n="menu.borders">Country borders</span
+          ><input id="border-toggle" type="checkbox" checked /></label
+        ><label
+          ><span data-i18n="menu.departure">Departure</span
+          ><select id="departure">
+            <option value="africa" data-i18n="region.africa">Southern Africa</option>
+            <option value="europe" data-i18n="region.europe">The Alps</option>
+            <option value="asia" data-i18n="region.asia">The Himalayas</option>
+            <option value="america" data-i18n="region.america">The Andes</option>
+            <option value="oceania" data-i18n="region.oceania">New Zealand</option>
           </select></label
         >
-        <button id="restart"><i data-lucide="rotate-ccw"></i>Restart flight</button
-        ><a href="/credits.html" target="_blank" rel="noopener">Credits &amp; sources</a>
+        <button id="restart">
+          <i data-lucide="rotate-ccw"></i
+          ><span data-i18n="menu.restart">Restart flight</span></button
+        ><a href="/credits.html" target="_blank" rel="noopener" data-i18n="menu.credits"
+          >Credits &amp; sources</a
+        >
       </dialog>
       <div id="loading">
         <div class="loading-title">&#x6f2b;&#x822a;<br /><b>ROAMFLIGHT</b></div>
         <progress id="load-progress" value="0" max="100"></progress
-        ><span id="load-status">Loading Earth</span>
+        ><span id="load-status" data-i18n="loading.earth">Loading Earth</span>
       </div>
       <div id="failure" hidden>
-        <h2>Unable to start the flight</h2>
+        <h2 data-i18n="errors.title">Unable to start the flight</h2>
         <p id="error-message"></p>
-        <button id="retry">Retry</button>
+        <button id="retry" data-i18n="errors.retry">Retry</button>
       </div>
     </main>
     <script type="module" src="/src/main.js"></script>

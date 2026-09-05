@@ -16,6 +16,10 @@ airframe collision or landing model. `src/control-surfaces.js` owns baked FBX
 aileron hinges and night navigation lights.
 `src/main.js` owns flight state, input, camera, missions and HUD integration.
 `src/style.css` owns responsive HUD and touch layout.
+`src/i18n.js` contains the two bundled dictionaries and browser-side locale selection.
+Vite shares one hashed locale chunk across the game, credits, 404 and OAuth completion
+pages. All users receive identical HTML; locale never enters the CDN cache key.
+Geographical IDs remain in English internally and are localized only when rendered.
 `src/aircraft.js` recenters the imported propeller before animating its nose-local
 axis. `src/audio.js` owns opt-in Web Audio playback, the layered soundscape,
 effects and fixed internal gain buses with automatic cue ducking. The only user
