@@ -1,5 +1,20 @@
 # Visual And Product Roadmap
 
+## Product Milestones
+
+These are planned stages, not features included in the current build.
+
+1. **World exploration:** refine country/region routes, flight feel, audio, scenery
+   and varied objectives around the existing real-world globe.
+2. **City-scale flying:** prototype one city with recognizable landmarks, local
+   routes and streamed detail; establish data licensing and mobile performance
+   budgets before attempting worldwide coverage.
+3. **A pilot's journey:** add discovery records, meaningful rewards, aircraft
+   variation and route unlocks that connect individual flights into a longer game.
+4. **Broader world coverage:** extend verified city and regional pipelines to more
+   countries with explicit quality and loading budgets, rather than promising every
+   city before the approach is proven.
+
 ## 0.2 Implemented
 
 - Softer cloud shading and subtle cloud drift.
@@ -24,7 +39,7 @@
 
 ## Before Wider Launch
 
-- Confirm a public HTTPS origin and validate from outside the tailnet.
+- Deploy to the selected Cloudflare Pages account and validate public HTTPS.
 - Test loading and sustained performance on real iOS/Android devices and slower
   networks; set transfer and frame-time budgets from those measurements.
 - Choose a dedicated hostname and CDN/static hosting account for distribution if

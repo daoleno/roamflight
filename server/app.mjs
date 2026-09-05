@@ -33,7 +33,7 @@ export function createApp(root) {
   app.get('/healthz', (_req, res) =>
     res
       .set('Cache-Control', 'no-store')
-      .json({ status: 'ok', service: 'geographical-adventures', version: '0.2.0' }),
+      .json({ status: 'ok', service: 'roamflight', version: '0.2.0' }),
   );
   app.use((req, res, next) => {
     if (req.method !== 'GET' && req.method !== 'HEAD')

@@ -6,7 +6,7 @@ const host = process.env.HOST || '0.0.0.0';
 if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
 const root = fileURLToPath(new URL('../dist/', import.meta.url));
 const server = createApp(root).listen(port, host, () =>
-  console.log(`Geographical Adventures listening on ${host}:${port}`),
+  console.log(`Roamflight listening on ${host}:${port}`),
 );
 server.requestTimeout = 30000;
 server.headersTimeout = 15000;

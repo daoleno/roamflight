@@ -12,6 +12,11 @@ play independent sessions.
 `src/geo.js` owns geographical coordinate conversion and spherical movement.
 `src/main.js` owns flight state, input, camera, missions and HUD integration.
 `src/style.css` owns responsive HUD and touch layout.
+`src/aircraft.js` recenters the imported propeller before animating its nose-local
+axis. `src/audio.js` owns opt-in Web Audio playback, the layered soundscape,
+effects and fixed internal gain buses with automatic cue ducking. The only user
+control is sound on/off; no old volume preferences are read. It creates no audio
+context before an explicit enable action and fades out when gameplay is paused.
 
 The geography uses a right-handed WebGL coordinate system. Original Unity mesh
 positions and normal-map Z components are reflected. Unit tests verify compass
@@ -28,10 +33,9 @@ The systemd unit runs read-only with automatic restart. Docker offers an equival
 non-root, read-only deployment on another server. Use one process manager at a time
 on the same port.
 
-The Tailscale Funnel option terminates public HTTPS and forwards to port 4177.
-It is an origin on this workstation, not a global CDN. Availability depends on
-this machine, its uplink and Tailscale; it is suitable for an initial public demo,
-not a substitute for capacity planning or a production uptime guarantee.
+Cloudflare Pages is the public hosting target. `npm run build:pages` produces a
+static-only artifact with edge headers, a true 404 page and health metadata.
+The Express server is used locally and in Docker, not executed on Pages.
 
 ## Assets And Delivery
 

@@ -1,39 +1,51 @@
-# Geographical Adventures Web
+# Roamflight · 漫航
 
-A playable, self-hosted Three.js adaptation of the final gameplay in Sebastian
-Lague's [first Geographical Adventures video](https://youtu.be/sLqXFF8mlEU).
+**驾驶你的飞机，飞越真实世界，在城市、山川与海岸之间发现新的旅程。**
 
-Version 0.2 lives in `/home/daoleno/workspace/geographical-adventures-web`.
-See [architecture](docs/ARCHITECTURE.md) and the [visual roadmap](docs/ROADMAP.md).
+**Explore the real world from your own aircraft. Discover new journeys between
+cities, mountains and coastlines.**
 
-## Fidelity
+Roamflight is an exploration-focused flying game for the browser. The journey
+matters as much as the destination: choose a route, discover places along the way,
+complete a flight or delivery, and set out again.
 
-This is a browser port, **not a pixel-identical reproduction or an official Unity
-WebGL build**. The original repository at commit
-`82fcda20bebb033c749b2339e9ce3a6e58007699` supplies the plane,
-252 terrain mesh records, country boundaries, geographical polygons, ocean map,
-and ground colour and world-normal textures. Those source assets include changes
-made after the video. The 16K hemisphere textures are reduced to 4K per hemisphere.
+![Roamflight current playable prototype](docs/images/roamflight.png)
 
-The flight controller, procedural clouds and shadows, water/sky shaders,
-parachutes, boats, missions and HUD are browser implementations. Original Unity
-volumetric scattering, exact cloud formations, development debug views, native
-menus, complete original quest system and original soundtrack are not reproduced.
-The day/night switch is illustrative, not an astronomical simulation.
+The current playable prototype uses a miniature real-world globe. Detailed city
+flyovers, airports, progression and additional aircraft are the long-term vision,
+not features already present in this release.
 
-## Run
+## Play
 
-Requires Node.js 22.12+; the installed service uses Node.js 24.
+- Local/LAN: `http://192.168.110.223:4177/`
+- Tailnet: `http://100.92.174.90:4177/`
+- Cloudflare Pages: see [deployment status and instructions](docs/DEPLOYMENT.md).
+- Source: [daoleno/roamflight](https://github.com/daoleno/roamflight).
+
+Each visitor plays an independent session. This is not a multiplayer game.
+
+## Current Prototype
+
+- Fly around a real geographical globe with terrain relief, coastlines and borders.
+- Steer, bank, change air speed and boost with keyboard or touch controls.
+- Drop parachute packages, receive delivery feedback and advance destinations.
+- Switch between chase, reverse and overhead views, or orbit the globe map.
+- Depart from Southern Africa, the Alps, the Himalayas, the Andes or New Zealand.
+- Use a single authored audio preset with quiet flight ambience, gentle harmonies
+  and contextual cues. Sound is opt-in; there is no mixer to configure.
+
+The day/night switch is illustrative. Flight is stylized rather than a realistic
+aerodynamic simulation. Flight progress is not persisted.
+
+## Development
+
+Use Node.js 24 (minimum 22.12). No API keys or external map services are required
+to play or develop locally; runtime assets are included in the repository.
 
 ```sh
 npm ci
 npm run dev -- --port 5173 --strictPort
 ```
-
-The server binds `0.0.0.0`, making it available to other devices on the same LAN.
-All runtime models, textures, font, icons and scripts are served locally. No API
-keys, external CDNs or network map services are needed at runtime. No accounts,
-telemetry, persistence or backend database are used.
 
 ```sh
 npm test
@@ -42,103 +54,84 @@ npm run build
 npm start
 ```
 
-`npm start` uses the production Express/sirv server, not Vite preview. It exposes
-only `dist/` and `/healthz`, with Brotli/gzip, ETags and security headers.
-
-The installed persistent user unit `geographical-adventures-web.service` is
-enabled at boot and automatically restarts on failure. User lingering is enabled
-on this machine, so no interactive login is needed. The unit source is retained
-in `deploy/geographical-adventures-web.service`.
-
-```sh
-systemctl --user status geographical-adventures-web.service
-systemctl --user restart geographical-adventures-web.service
-systemctl --user stop geographical-adventures-web.service
-```
-
-After building a new release, restart the service so its static-file index is
-refreshed. Do not start `npm start` or Docker on 4177 while the installed unit is
-already using that port. The development server can use 5173 independently.
-
-## Public HTTPS
-
-LAN: `http://192.168.110.223:4177/`.
-Tailnet: `http://100.92.174.90:4177/`.
-
-A Funnel publication attempt was blocked by the machine's administrator-permission
-requirement. **A public URL is not considered deployed until this step succeeds
-and an external HTTPS check passes.** Run on the host:
-
-```sh
-sudo tailscale funnel --bg --yes 4177
-tailscale funnel status
-```
-
-If Tailscale requires account-level Funnel enablement, follow the authorization
-link printed by the command. The expected hostname is
-`https://manjaro.tail7e23.ts.net/`; use the actual URL returned by the command.
-Only port 4177 is published. Visitors do not need Tailscale once Funnel is enabled.
-
-To turn off only this publication:
-
-```sh
-sudo tailscale funnel --https=443 off
-```
-
-This is a workstation-origin public demo, not a CDN or an uptime guarantee. The
-machine must remain online. For a dedicated server, the same build can run with
-`docker compose up -d --build`; put a managed HTTPS reverse proxy in front of it.
-The container recipe is included; validate it on the destination host before use.
-Vercel is not connected in the current environment, and no deployment or repository
-has been created under any GitHub organization or cloud account.
+The production server binds port 4177 and exposes only `dist/` and `/healthz`.
+On the development host, the existing `roamflight.service` already owns 4177;
+use 5173 for development or stop that service before running another server.
 
 ## Controls
 
-| Input                                  | Action                                       |
-| -------------------------------------- | -------------------------------------------- |
-| A / D or Left / Right                  | Turn and bank                                |
-| W / S or Up / Down                     | Increase / decrease air speed                |
-| Shift                                  | Boost                                        |
-| Space                                  | Drop a package                               |
-| C                                      | Chase, reverse and overhead cameras          |
-| M                                      | Globe view; drag to orbit and scroll to zoom |
-| N                                      | Day / night                                  |
-| F                                      | Fullscreen                                   |
-| Escape                                 | Pause and settings                           |
-| Drag horizontally on the flight canvas | Steer                                        |
+| Input                                  | Action                                      |
+| -------------------------------------- | ------------------------------------------- |
+| A / D or Left / Right                  | Turn and bank                               |
+| W / S or Up / Down                     | Increase / decrease speed                   |
+| Shift                                  | Boost                                       |
+| Space                                  | Drop a package                              |
+| C                                      | Change camera                               |
+| M                                      | Globe map; drag to orbit and scroll to zoom |
+| N                                      | Day / night                                 |
+| F                                      | Fullscreen                                  |
+| Escape                                 | Pause                                       |
+| Drag horizontally on the flight canvas | Steer                                       |
+| Speaker icon                           | Enable / mute the audio preset              |
 
-Touch devices have left/right, boost and package buttons. The pause menu controls
-clouds, borders, air speed and departure region. Packages delivered within 190 km
-of the destination count as successful after landing and advance the mission.
-Flight is stylized and does not implement aerodynamic physics or realistic speed
-relative to Earth's geographic scale.
+Phones have steering, boost and package buttons. Browser audio requires an explicit
+gesture: tap the speaker icon after loading. Pausing or switching away fades sound
+to silence. Use the device volume for overall loudness; old mixer preferences are
+ignored. Packages landing within 190 km of a destination count as successful in
+this early prototype.
 
-## Sources And Assets
+## Verification
 
-Credits and the retained original MIT license are available at `/credits.html`.
-The source project is [SebLague/Geographical-Adventures](https://github.com/SebLague/Geographical-Adventures).
-Geographical sources are Natural Earth, NASA Blue Marble and GEBCO, as credited by
-the source project. Political boundaries are displayed as provided in that data.
+Node tests cover geography, spherical movement, propeller pivots, the audio preset,
+terrain conversion and HTTP delivery/security. Browser tests generate screenshots,
+canvas checks and audio-signal evidence in the ignored `verification/` directory.
 
-`reference/` contains original large source textures and is not shipped by Vite.
-`public/assets/` contains optimized runtime assets. Rebuild them with:
+```sh
+CDP_URL=http://127.0.0.1:9222 TEST_URL=http://127.0.0.1:4177 npm run verify
+CDP_URL=http://127.0.0.1:9222 TEST_URL=http://127.0.0.1:4177 node scripts/verify-audio.mjs
+```
+
+CI checks formatting, tests and the build on pushes and pull requests. Cloudflare
+deployment has a separate, explicitly triggered workflow with scoped credentials.
+
+## Documentation
+
+- [Product direction](docs/PRODUCT.md): positioning, principles and the intended play loop.
+- [Roadmap](docs/ROADMAP.md): implemented work and future milestones.
+- [Architecture](docs/ARCHITECTURE.md): rendering, data, audio and runtime boundaries.
+- [Deployment](docs/DEPLOYMENT.md): Cloudflare Pages, local systemd and Docker.
+- [Contributing](CONTRIBUTING.md): development and verification expectations.
+- [Credits](public/credits.html): original work and asset attribution.
+
+## Origins And Attribution
+
+**Thank you, Sebastian Lague**, for sharing the code, data-processing work and
+development videos behind Geographical Adventures. Roamflight's starting point
+would not exist without that work.
+
+Roamflight started as an independent browser adaptation of Sebastian Lague's
+[Geographical Adventures](https://github.com/SebLague/Geographical-Adventures),
+inspired by [this development video](https://youtu.be/sLqXFF8mlEU). It is not an
+official release, an original Unity WebGL build or a pixel-identical reproduction.
+
+Terrain, aircraft and geographical assets originate from upstream commit
+`82fcda20bebb033c749b2339e9ce3a6e58007699`, with changes made after that first video.
+The original MIT notice is retained in `public/assets/LICENSE-original.txt`;
+Montserrat's license is retained alongside it. Geography sources credited by the
+original project include Natural Earth, NASA Blue Marble and GEBCO.
+
+Large source textures live in ignored `reference/`. Regenerate optimized assets with:
 
 ```sh
 node scripts/assets.mjs
 node scripts/prepare-assets.mjs
 ```
 
-The terrain converter reverses the Unity Z axis and triangle winding to preserve
-correct geographic handedness in WebGL. Normal maps receive the same Z reflection.
+The current browser shaders, procedural soundscape, controls and missions are
+independent implementations. No soundtrack recordings from the video are used.
 
-## Browser Verification
+## License
 
-`scripts/verify.mjs` connects Playwright to an existing Chromium CDP endpoint.
-It tests canvas pixels, flight movement, steering, pause/settings, package landing,
-mission advancement, camera modes, globe orbit, night, departures, mobile touch
-controls, responsive framing, resource locality and console errors. Screenshots
-and a JSON report are placed in `verification/`.
-
-```sh
-CDP_URL=http://127.0.0.1:9222 TEST_URL=http://127.0.0.1:4177 node scripts/verify.mjs
-```
+Roamflight is an **MIT-licensed project**; see [LICENSE](LICENSE). This does not
+replace third-party copyright notices or licenses. Sebastian Lague's original MIT
+notice and the font license remain in `public/assets/` and are included in builds.

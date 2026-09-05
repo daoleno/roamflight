@@ -1,0 +1,107 @@
+# Deployment
+
+## Current Status
+
+The local `roamflight.service` serves the built app at port 4177. Cloudflare Pages
+is the selected public hosting target. At setup, the workstation's Cloudflare
+OAuth session was expired; public deployment requires a fresh login. Do not treat
+an anticipated `pages.dev` hostname as live until deployment and HTTPS checks pass.
+
+## Cloudflare Pages
+
+The game is client-side and needs no Worker, database or paid map API. Pages serves
+the static build through Cloudflare's network; the workstation does not need to
+stay online for the hosted game to remain available.
+
+```sh
+npx wrangler login --device --browser=false
+npx wrangler whoami
+npx wrangler pages project create roamflight --production-branch=main
+npm run deploy:pages
+```
+
+Create the project once. If the account contains multiple teams, select the intended
+personal account explicitly with `CLOUDFLARE_ACCOUNT_ID`; do not guess or select a
+company account. Use the deployment URL returned by Wrangler. No custom domain or
+existing DNS record is changed by these commands.
+
+### Authorizing From Another Computer
+
+Prefer Wrangler's device authorization flow. It does not use a localhost callback
+and does not require SSH port forwarding:
+
+```sh
+npx wrangler login --device --browser=false
+```
+
+Open the verification URL printed by Wrangler on the other computer, enter its
+short-lived device code, and approve the requested account. The server polls for
+the result automatically. Use the minimum scopes for Pages where appropriate:
+
+```sh
+npx wrangler login --device --browser=false --scopes account:read user:read pages:write
+```
+
+For older Wrangler versions without `--device`, the ordinary OAuth flow listens
+on loopback port 8976. An SSH tunnel is a fallback, not required for device login:
+
+```sh
+ssh -N -L 8976:127.0.0.1:8976 daoleno@100.92.174.90
+```
+
+Keep the tunnel open. On the server run `npx wrangler login --browser=false`, then
+open the printed authorization URL on the other computer. Its localhost callback
+will travel through SSH. Use the server's LAN address instead when both devices
+are on the LAN. Never paste callback URLs, authorization codes or tokens into issues
+or chat; they are credentials.
+
+`npm run build:pages` produces `pages-dist/`, excludes local `.br`/`.gz` variants,
+and checks every asset against a conservative 25 MiB per-file and 20,000-file budget.
+`_headers` supplies security/cache headers; `_redirects` maps `/healthz` to generated
+health metadata. `404.html` prevents missing assets from returning the game HTML.
+
+After deployment, verify the root page, `/healthz`, `/credits.html`, actual model
+and texture loads, and a real 404. Run the browser tests against the returned URL.
+
+## GitHub Workflow
+
+The normal CI workflow validates every push/PR. The separate **Deploy to Cloudflare
+Pages** workflow is manually triggered and requires these GitHub secrets:
+
+- `CLOUDFLARE_ACCOUNT_ID`: the intended Cloudflare account.
+- `CLOUDFLARE_API_TOKEN`: an account-scoped token with Cloudflare Pages edit permission
+  and the read permissions required by Wrangler for that account.
+
+Use a scoped API token for CI, not the workstation's OAuth session. The workflow
+targets the existing `roamflight` project and production branch `main`. It does not
+claim to be configured until the secrets and project exist.
+
+## Local Production Service
+
+Repository: `/home/daoleno/workspace/roamflight`.
+Service definition: `deploy/roamflight.service`.
+
+```sh
+npm ci
+npm test
+npm run build
+systemctl --user restart roamflight.service
+systemctl --user status roamflight.service
+```
+
+The unit is enabled at boot with user lingering and restarts on failure. Only
+`dist/` and `/healthz` are exposed, using Express, sirv and Helmet. Runtime file
+writes are disabled by the unit's sandbox. Rebuilding requires a service restart
+to refresh its static-file index. The replaced `geographical-adventures-web.service`
+is disabled; port 4177 and existing LAN/Tailnet addresses remain unchanged.
+
+## Docker Alternative
+
+```sh
+docker compose up -d --build
+```
+
+This is an alternative to the local service, not a second process on the same port.
+The image runs as a non-root user with a read-only filesystem. Put a managed HTTPS
+reverse proxy in front of it on a dedicated server. The Compose configuration is
+validated locally; validate image building and deployment on the destination host.

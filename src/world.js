@@ -3,6 +3,7 @@ import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { mergeGeometries, mergeGroups } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MeshBVH, acceleratedRaycast } from 'three-mesh-bvh';
 import { RADIUS, toPoint } from './geo.js';
+import { preparePropeller } from './aircraft.js';
 
 const asset = (name) => `/assets/${name}`;
 const sharedVertex = `
@@ -248,6 +249,7 @@ export async function createWorld(renderer, scene, onProgress) {
       o.material = old.map((m) => (m.name === 'C' ? red : m.name === 'Flaps' ? gold : yellow));
     else o.material = /Circle|Support/.test(o.name) ? gold : yellow;
   });
+  const propeller = preparePropeller(plane);
   plane.scale.setScalar(0.042);
   plane.position.y = -0.8;
   const aircraft = new THREE.Group();
@@ -272,6 +274,7 @@ export async function createWorld(renderer, scene, onProgress) {
     stars,
     aircraft,
     plane,
+    propeller,
     planeShadow,
     groundRadius,
     countries: countries.features,

@@ -472,7 +472,6 @@ dialog a {
     width: 17px;
     height: 17px;
   }
-  #sound,
   #fullscreen {
     display: none !important;
   }

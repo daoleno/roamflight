@@ -5,3 +5,5 @@ dist
 reference
 verification
 deploy
+pages-dist
+.wrangler

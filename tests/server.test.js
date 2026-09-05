@@ -64,7 +64,9 @@ test('production server exposes only built files with compression, caching and s
   });
   await t.test('health check is uncached', async () => {
     const response = await fetch(base + '/healthz');
-    assert.equal((await response.json()).status, 'ok');
+    const health = await response.json();
+    assert.equal(health.status, 'ok');
+    assert.equal(health.service, 'roamflight');
     assert.equal(response.headers.get('cache-control'), 'no-store');
   });
   await t.test('unknown, hidden and source paths do not return the game HTML', async () => {

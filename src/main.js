@@ -20,6 +20,8 @@ import {
   RotateCcw,
 } from 'lucide';
 import { createWorld, createPackage } from './world.js';
+import { rotatePropeller } from './aircraft.js';
+import { FlightAudio } from './audio.js';
 import {
   RADIUS,
   DEG,
@@ -92,7 +94,8 @@ let last = performance.now(),
   ground = RADIUS,
   nextMission = 0,
   notificationTimeout;
-const music = { enabled: false, context: null, gain: null, oscillator: null };
+const audio = new FlightAudio();
+let audioBusy = false;
 const desiredCamera = new THREE.Vector3(),
   desiredLook = new THREE.Vector3(),
   cameraLook = new THREE.Vector3();
@@ -194,6 +197,8 @@ async function start() {
       // Test-only positioning supports deterministic landing and geography assertions.
       ...(params.has('test')
         ? {
+            audio: () => audio.inspect(),
+            audioEvent: (event) => audio.play(event),
             place: (lon, lat) => {
               state.up.copy(toPoint(lon, lat));
               state.forward.copy(headingVector(state.up, 0));
@@ -282,6 +287,7 @@ function setDeparture(key) {
 function setPaused(value) {
   if (!state.ready) return;
   state.paused = value;
+  audio.setActivity(!value && !document.hidden);
   keys.clear();
   $('pause').setAttribute('aria-pressed', String(value));
   setIcon('pause', value ? 'play' : 'pause');
@@ -341,6 +347,7 @@ function dropPackage() {
   item.deliveryTarget = [...state.target];
   item.error = distanceKm(toCoordinate(state.up), [state.target[2], state.target[3]]);
   state.packages.push(item);
+  audio.play('drop');
   if (state.packages.length > 12) disposePackage(state.packages.shift());
   notify('Package away', 1500);
 }
@@ -360,6 +367,10 @@ function updatePackages(dt) {
   for (const p of state.packages) {
     p.age += dt;
     if (!p.landed) {
+      if (!p.openSound && p.age >= 0.7) {
+        p.openSound = true;
+        audio.play('parachute');
+      }
       const opening = Math.min(1, p.age / 1.2);
       p.canopy.scale.setScalar(Math.max(0.03, 1 - Math.pow(1 - opening, 3)));
       p.radius = Math.max(p.ground + 0.27, p.radius - dt * (p.age < 0.7 ? 1.3 : 0.72));
@@ -370,10 +381,12 @@ function updatePackages(dt) {
         const current = p.deliveryTarget[0] === state.target[0];
         if (p.error < 190 && current) {
           state.delivered++;
+          audio.play('success');
           notify(`${p.deliveryTarget[0]} delivery complete!`, 4000);
           state.target = [...destinations[nextMission++ % destinations.length]];
           updateMission();
         } else if (current) {
+          audio.play('miss');
           notify(`${Math.round(p.error)} km from ${p.deliveryTarget[0]}`, 3600);
         }
       }
@@ -598,8 +611,7 @@ function frame(now) {
   world.aircraft.quaternion.setFromRotationMatrix(basis);
   world.aircraft.rotateZ(state.bank);
   world.aircraft.position.copy(state.up).multiplyScalar(state.radius);
-  const prop = world.plane.getObjectByName('Prop');
-  if (prop && !state.paused && !state.map) prop.rotation.z += dt * 90;
+  if (!state.paused && !state.map) rotatePropeller(world.propeller, dt, state.speed);
   if (!state.paused && !state.map) updateTrails();
   updateCamera(dt);
   updateLighting(dt);
@@ -630,48 +642,34 @@ function frame(now) {
       hudElapsed = 0;
     }
   }
-  if (music.gain) {
-    music.gain.gain.setTargetAtTime(
-      music.enabled && !state.paused && !state.map ? 0.025 : 0,
-      music.context.currentTime,
-      0.15,
-    );
-    music.oscillator.frequency.setTargetAtTime(
-      45 + state.speed * 28,
-      music.context.currentTime,
-      0.1,
-    );
-  }
+  audio.update({
+    speed: state.speed,
+    bank: state.bank,
+    map: state.map,
+    night: state.night,
+    country: state.country,
+    boost: keys.has('ShiftLeft') || keys.has('ShiftRight'),
+  });
   renderer.render(scene, camera);
 }
 
-function toggleSound() {
-  music.enabled = !music.enabled;
-  if (!music.context) {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) {
-      notify('Audio is unavailable in this browser');
-      music.enabled = false;
-      return;
-    }
-    music.context = new AudioContext();
-    music.gain = music.context.createGain();
-    music.gain.gain.value = 0;
-    music.oscillator = music.context.createOscillator();
-    music.oscillator.type = 'sawtooth';
-    const filter = music.context.createBiquadFilter();
-    filter.type = 'lowpass';
-    filter.frequency.value = 230;
-    music.oscillator.connect(filter);
-    filter.connect(music.gain);
-    music.gain.connect(music.context.destination);
-    music.oscillator.start();
+async function toggleSound(value = !audio.enabled) {
+  if (audioBusy) return;
+  audioBusy = true;
+  $('sound').disabled = true;
+  try {
+    audio.setActivity(state.ready && !state.paused && !document.hidden);
+    await audio.setEnabled(value);
+  } catch {
+    notify('Audio is unavailable. Tap the sound button to retry.');
+  } finally {
+    audioBusy = false;
+    $('sound').disabled = false;
+    $('sound').setAttribute('aria-pressed', String(audio.enabled));
+    $('sound').setAttribute('aria-label', audio.enabled ? 'Mute audio' : 'Enable audio');
+    $('sound').title = audio.enabled ? 'Mute audio' : 'Enable audio';
+    setIcon('sound', audio.enabled ? 'volume-2' : 'volume-x');
   }
-  music.context.resume().catch(() => {
-    music.enabled = false;
-  });
-  $('sound').setAttribute('aria-pressed', String(music.enabled));
-  setIcon('sound', music.enabled ? 'volume-2' : 'volume-x');
 }
 
 async function fullscreen() {
@@ -693,7 +691,7 @@ $('pause-dialog').addEventListener('cancel', (e) => {
 $('view').onclick = changeCamera;
 $('globe').onclick = toggleMap;
 $('daylight').onclick = toggleNight;
-$('sound').onclick = toggleSound;
+$('sound').onclick = () => toggleSound();
 $('fullscreen').onclick = fullscreen;
 $('drop').onclick = dropPackage;
 $('throttle').oninput = (e) => {
@@ -734,12 +732,15 @@ window.addEventListener('keydown', (e) => {
 });
 window.addEventListener('keyup', (e) => keys.delete(e.code));
 window.addEventListener('blur', () => {
+  audio.setActivity(false);
   keys.clear();
   if (state.ready && !state.paused) setPaused(true);
 });
 document.addEventListener('visibilitychange', () => {
+  if (document.hidden) audio.setActivity(false);
   if (document.hidden && state.ready && !state.paused) setPaused(true);
 });
+window.addEventListener('pagehide', () => audio.setActivity(false));
 for (const [id, code] of [
   ['left', 'ArrowLeft'],
   ['right', 'ArrowRight'],

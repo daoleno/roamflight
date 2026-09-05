@@ -6,3 +6,5 @@ verification/
 !.env.example
 .vercel/
 *.log
+pages-dist/
+.wrangler/

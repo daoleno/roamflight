@@ -76,6 +76,8 @@ try {
   check('desktop canvas renders textured scene', desktopPixels);
   await capture(page, 'desktop.png');
   await page.locator('#pause').click();
+  await page.locator('#sound').click();
+  await page.waitForFunction(() => window.__flight.audio().enabled);
   const before = await flight(page);
   await page.waitForFunction((t) => window.__flight.state.elapsed > t + 0.4, before.elapsed, {
     timeout: 30000,
@@ -122,6 +124,8 @@ try {
   const delivery = await flight(page);
   assert.notEqual(delivery.target[0], 'Cape Town');
   check('landing validates distance and advances mission', delivery.target);
+  assert.equal(await page.evaluate(() => window.__flight.audio().lastEvent), 'success');
+  check('successful gameplay delivery triggers the audio cue');
   await capture(page, 'delivery.png');
   await page.locator('#view').click();
   assert.equal((await flight(page)).view, 1);

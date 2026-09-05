@@ -4,3 +4,5 @@ reference/
 verification/
 public/assets/
 package-lock.json
+pages-dist/
+.wrangler/

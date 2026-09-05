@@ -4,13 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#3888bd" />
-    <title>Geographical Adventures</title>
+    <title>Roamflight | &#x6f2b;&#x822a;</title>
+    <meta
+      name="description"
+      content="Explore the real world from your own aircraft. Discover new journeys between cities, mountains and coastlines."
+    />
+    <meta property="og:title" content="Roamflight | &#x6f2b;&#x822a;" />
+    <meta
+      property="og:description"
+      content="Explore the real world from your own aircraft. Discover new journeys between cities, mountains and coastlines."
+    />
+    <meta property="og:type" content="website" />
     <link rel="icon" href="data:," />
   </head>
   <body>
-    <main id="game" aria-label="Geographical Adventures flight simulator">
+    <main id="game" aria-label="Roamflight flight exploration game">
       <canvas id="world" aria-label="Interactive Earth and aircraft"></canvas>
-      <header id="identity"><span>GEOGRAPHICAL</span><strong>ADVENTURES</strong></header>
+      <header id="identity"><span>&#x6f2b;&#x822a;</span><strong>ROAMFLIGHT</strong></header>
       <div id="toolbar" role="toolbar" aria-label="Flight controls">
         <button id="view" title="Change camera (C)" aria-label="Change camera">
           <i data-lucide="camera"></i>
@@ -26,7 +36,7 @@
         >
           <i data-lucide="sun"></i>
         </button>
-        <button id="sound" title="Engine sound" aria-label="Engine sound" aria-pressed="false">
+        <button id="sound" title="Enable audio" aria-label="Enable audio" aria-pressed="false">
           <i data-lucide="volume-x"></i>
         </button>
         <button id="fullscreen" title="Fullscreen (F)" aria-label="Fullscreen">
@@ -94,11 +104,12 @@
             <option value="america">The Andes</option>
             <option value="oceania">New Zealand</option>
           </select></label
-        ><button id="restart"><i data-lucide="rotate-ccw"></i>Restart flight</button
+        >
+        <button id="restart"><i data-lucide="rotate-ccw"></i>Restart flight</button
         ><a href="/credits.html" target="_blank" rel="noopener">Credits &amp; sources</a>
       </dialog>
       <div id="loading">
-        <div class="loading-title">GEOGRAPHICAL<br /><b>ADVENTURES</b></div>
+        <div class="loading-title">&#x6f2b;&#x822a;<br /><b>ROAMFLIGHT</b></div>
         <progress id="load-progress" value="0" max="100"></progress
         ><span id="load-status">Loading Earth</span>
       </div>
