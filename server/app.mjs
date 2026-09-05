@@ -47,6 +47,9 @@ export function createApp(root) {
       gzip: true,
       dotfiles: false,
       setHeaders(res, path) {
+        if (/\.(?:bytes|bin|fbx)(?:\.(?:br|gz))?$/.test(path)) {
+          res.setHeader('Content-Type', 'application/octet-stream');
+        }
         const html = path === '/' || /\.html(?:\.(?:br|gz))?$/.test(path);
         const hashed = /-[\w-]{8,}\.(?:js|css)(?:\.(?:br|gz))?$/.test(path);
         res.setHeader(

@@ -12,6 +12,7 @@ test('production server exposes only built files with compression, caching and s
   const html = '<html><title>Flight</title></html>';
   await writeFile(join(root, 'index.html'), html);
   await writeFile(join(root, '.env'), 'private');
+  await writeFile(join(root, 'assets', 'terrain.bytes'), Buffer.from([0, 1, 2, 255]));
   const js = 'console.log("flight");'.repeat(500);
   const path = join(root, 'assets', 'index-abcdefgh.js');
   await writeFile(path, js);
@@ -48,6 +49,11 @@ test('production server exposes only built files with compression, caching and s
       assert.match(response.headers.get('cache-control'), /immutable/);
       assert.match(response.headers.get('vary'), /Accept-Encoding/i);
     }
+  });
+  await t.test('binary geography has an explicit MIME type', async () => {
+    const response = await fetch(base + '/assets/terrain.bytes');
+    assert.equal(response.headers.get('content-type'), 'application/octet-stream');
+    assert.deepEqual([...new Uint8Array(await response.arrayBuffer())], [0, 1, 2, 255]);
   });
   await t.test('conditional requests return 304', async () => {
     const response = await fetch(base + '/assets/index-abcdefgh.js');
