@@ -19,6 +19,14 @@ The Pages custom domain `roamflight.wooo.guru` is registered but pending DNS
 verification. The current OAuth session cannot modify DNS records (HTTP 403).
 Create the following record in the `wooo.guru` DNS zone:
 
+Alternatively, let the **Configure Roamflight DNS** GitHub workflow perform this
+step. Create a Cloudflare API token with **Zone / DNS / Edit** and **Zone / Zone /
+Read**, restricted to **wooo.guru**, and add it as the repository secret
+`CLOUDFLARE_DNS_API_TOKEN`. The workflow verifies the zone, creates only the record
+below, accepts an already-correct record, and refuses to overwrite conflicting
+records. It does not modify the apex or print the token. After DNS is configured,
+check Pages validation and the public HTTPS certificate separately.
+
 | Type  | Name       | Target               | Proxy   | TTL  |
 | ----- | ---------- | -------------------- | ------- | ---- |
 | CNAME | roamflight | roamflight.pages.dev | Proxied | Auto |
