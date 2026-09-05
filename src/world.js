@@ -4,6 +4,7 @@ import { mergeGeometries, mergeGroups } from 'three/addons/utils/BufferGeometryU
 import { MeshBVH, acceleratedRaycast } from 'three-mesh-bvh';
 import { RADIUS, toPoint } from './geo.js';
 import { preparePropeller } from './aircraft.js';
+import { prepareControlSurfaces } from './control-surfaces.js';
 
 const asset = (name) => `/assets/${name}`;
 const sharedVertex = `
@@ -250,6 +251,7 @@ export async function createWorld(renderer, scene, onProgress) {
     else o.material = /Circle|Support/.test(o.name) ? gold : yellow;
   });
   const propeller = preparePropeller(plane);
+  const controls = prepareControlSurfaces(plane);
   plane.scale.setScalar(0.042);
   plane.position.y = -0.8;
   const aircraft = new THREE.Group();
@@ -275,6 +277,7 @@ export async function createWorld(renderer, scene, onProgress) {
     aircraft,
     plane,
     propeller,
+    controls,
     planeShadow,
     groundRadius,
     countries: countries.features,

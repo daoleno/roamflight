@@ -30,6 +30,7 @@ Each visitor plays an independent session. This is not a multiplayer game.
 - Fly around a real geographical globe with terrain relief, coastlines and borders.
 - Steer, bank, change air speed and boost with keyboard or touch controls.
 - Pitch up or down to climb and descend, with a protective terrain clearance.
+- See ailerons respond to turns and navigation lights fade in at night.
 - Drop parachute packages, receive delivery feedback and advance destinations.
 - Switch between chase, reverse and overhead views, or orbit the globe map.
 - Depart from Southern Africa, the Alps, the Himalayas, the Andes or New Zealand.

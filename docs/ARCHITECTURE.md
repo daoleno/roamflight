@@ -10,6 +10,10 @@ play independent sessions.
 
 `src/world.js` imports terrain, materials, aircraft, clouds, ships and packages.
 `src/geo.js` owns geographical coordinate conversion and spherical movement.
+`src/flight.js` integrates speed, pitch, altitude and spherical movement at 120 Hz.
+Terrain clearance protects the aircraft reference point; it is not a complete
+airframe collision or landing model. `src/control-surfaces.js` owns baked FBX
+aileron hinges and night navigation lights.
 `src/main.js` owns flight state, input, camera, missions and HUD integration.
 `src/style.css` owns responsive HUD and touch layout.
 `src/aircraft.js` recenters the imported propeller before animating its nose-local

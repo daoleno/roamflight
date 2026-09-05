@@ -3,7 +3,8 @@
 ## Current Status
 
 The local `roamflight.service` serves the built app at port 4177. The public Pages
-deployment is **https://roamflight.pages.dev/**, published from commit `bc33d76`.
+deployment is **https://roamflight.pages.dev/** and follows verified incremental
+releases from `main`. The first release was published from commit `bc33d76`.
 Initial deployment URL: `https://100ef101.roamflight.pages.dev`.
 OAuth device authorization completed successfully with account/user read and
 Pages write permissions. Public HTML, health metadata and terrain downloads return

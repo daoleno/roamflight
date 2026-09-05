@@ -25,6 +25,7 @@ import { createWorld, createPackage } from './world.js';
 import { rotatePropeller } from './aircraft.js';
 import { FlightAudio } from './audio.js';
 import { stepFlight } from './flight.js';
+import { updateControlSurfaces } from './control-surfaces.js';
 import {
   RADIUS,
   DEG,
@@ -197,6 +198,9 @@ async function start() {
           camera: camera.position.toArray(),
           radius: state.radius,
           pitch: state.pitch,
+          ailerons: world.controls.ailerons.map(({ pivot }) => pivot.rotation.x),
+          navigationLights: world.controls.lights.visible,
+          navigationLightOpacity: world.controls.lights.children[0].material.opacity,
           ground,
         };
       },
@@ -629,6 +633,12 @@ function frame(now) {
   if (!state.paused && !state.map) updateTrails();
   updateCamera(dt);
   updateLighting(dt);
+  updateControlSurfaces(
+    world.controls,
+    state.bank / 0.48,
+    world.uniforms.night.value,
+    state.paused || state.map ? 0 : dt,
+  );
   updateTarget();
   shadowSphere.radius = ground;
   shadowRay.set(world.aircraft.position, world.uniforms.sun.value.clone().negate());
