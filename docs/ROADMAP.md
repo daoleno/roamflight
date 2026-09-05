@@ -1,5 +1,9 @@
 # Visual And Product Roadmap
 
+See the [source-backed upstream audit](UPSTREAM_AUDIT.md) for the first post-release
+comparison and acceptance criteria. Its proposed first implementations are flight
+response, a complete mission loop, and terrain LOD/lighting infrastructure.
+
 ## Product Milestones
 
 These are planned stages, not features included in the current build.

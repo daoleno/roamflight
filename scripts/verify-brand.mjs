@@ -29,8 +29,11 @@ try {
       page.on('response', (response) => {
         if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`);
       });
-      await page.goto(`${base}/?test=1&paused=1`);
-      await page.waitForFunction(() => window.__flight?.state.ready, {}, { timeout: 60000 });
+      await page.goto(`${base}/?test=1&paused=1`, {
+        waitUntil: 'domcontentloaded',
+        timeout: 60000,
+      });
+      await page.waitForFunction(() => window.__flight?.state.ready, {}, { timeout: 180000 });
       await page.locator('#loading').waitFor({ state: 'hidden' });
       assert.equal(await page.title(), 'Roamflight | \u6f2b\u822a');
       assert.equal(await page.locator('#identity strong').innerText(), 'ROAMFLIGHT');
@@ -64,6 +67,11 @@ try {
       const credits = await context.request.get(base + '/credits.html');
       assert.match(await credits.text(), /SebLague\/Geographical-Adventures/);
       assert.equal((await context.request.get(base + '/missing-roamflight-page')).status(), 404);
+      await page.locator('#pause').click();
+      const elapsed = await page.evaluate(() => window.__flight.state.elapsed);
+      await page.waitForFunction((t) => window.__flight.state.elapsed > t + 0.25, elapsed);
+      await page.locator('#drop').click();
+      assert.equal(await page.evaluate(() => window.__flight.state.dropped), 1);
       checks.push({ viewport: `${width}x${height}`, pass: true, ...result });
       console.log('PASS branding, canvas, health, license and 404', `${width}x${height}`, result);
     } finally {

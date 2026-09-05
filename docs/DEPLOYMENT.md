@@ -2,10 +2,30 @@
 
 ## Current Status
 
-The local `roamflight.service` serves the built app at port 4177. Cloudflare Pages
-is the selected public hosting target. At setup, the workstation's Cloudflare
-OAuth session was expired; public deployment requires a fresh login. Do not treat
-an anticipated `pages.dev` hostname as live until deployment and HTTPS checks pass.
+The local `roamflight.service` serves the built app at port 4177. The public Pages
+deployment is **https://roamflight.pages.dev/**, published from commit `bc33d76`.
+Initial deployment URL: `https://100ef101.roamflight.pages.dev`.
+OAuth device authorization completed successfully with account/user read and
+Pages write permissions. Public HTML, health metadata and terrain downloads return
+HTTP 200. See generated browser verification reports for rendering checks.
+
+During verification on this workstation, HTTP/3 image downloads were unusually slow
+while HTTP/2 fetched the same assets normally. Public browser checks use Chromium
+with `--disable-quic` to separate that network-path issue from rendering correctness.
+This is not evidence of equivalent load times on all devices or networks.
+
+The Pages custom domain `roamflight.wooo.guru` is registered but pending DNS
+verification. The current OAuth session cannot modify DNS records (HTTP 403).
+Create the following record in the `wooo.guru` DNS zone:
+
+| Type  | Name       | Target               | Proxy   | TTL  |
+| ----- | ---------- | -------------------- | ------- | ---- |
+| CNAME | roamflight | roamflight.pages.dev | Proxied | Auto |
+
+The subdomain was NXDOMAIN before attachment; no existing record or apex domain
+was changed. Run `npm run domain:status` to inspect Pages validation without
+printing credentials. Do not label the custom hostname active until DNS, certificate
+validation and an HTTPS request all succeed.
 
 ## Cloudflare Pages
 

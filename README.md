@@ -19,7 +19,8 @@ not features already present in this release.
 
 - Local/LAN: `http://192.168.110.223:4177/`
 - Tailnet: `http://100.92.174.90:4177/`
-- Cloudflare Pages: see [deployment status and instructions](docs/DEPLOYMENT.md).
+- Public game: **https://roamflight.pages.dev/**.
+- Custom domain: `roamflight.wooo.guru` is attached to Pages; DNS verification is pending.
 - Source: [daoleno/roamflight](https://github.com/daoleno/roamflight).
 
 Each visitor plays an independent session. This is not a multiplayer game.
@@ -98,6 +99,7 @@ deployment has a separate, explicitly triggered workflow with scoped credentials
 
 - [Product direction](docs/PRODUCT.md): positioning, principles and the intended play loop.
 - [Roadmap](docs/ROADMAP.md): implemented work and future milestones.
+- [Upstream audit](docs/UPSTREAM_AUDIT.md): source-backed gaps and the next implementation priorities.
 - [Architecture](docs/ARCHITECTURE.md): rendering, data, audio and runtime boundaries.
 - [Deployment](docs/DEPLOYMENT.md): Cloudflare Pages, local systemd and Docker.
 - [Contributing](CONTRIBUTING.md): development and verification expectations.
