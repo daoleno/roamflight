@@ -97,6 +97,8 @@ deployment has a separate, explicitly triggered workflow with scoped credentials
 
 ## Documentation
 
+- [Implementation plan](docs/IMPLEMENTATION_PLAN.md): ordered increments, acceptance criteria and per-commit progress.
+
 - [Product direction](docs/PRODUCT.md): positioning, principles and the intended play loop.
 - [Roadmap](docs/ROADMAP.md): implemented work and future milestones.
 - [Upstream audit](docs/UPSTREAM_AUDIT.md): source-backed gaps and the next implementation priorities.
