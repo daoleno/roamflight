@@ -91,9 +91,15 @@ preferred languages; unmatched languages fall back to English. The same static H
 and bundled dictionaries are served to everyone. No IP detection, language cookie,
 locale redirect, server rendering or `Vary: Accept-Language` is used.
 
+The language selector below the game title overrides automatic selection and remembers
+the choice locally in `roamflight.locale`. It also appears on supporting pages.
+Chinese titles show only "漫航"; English titles show only "Roamflight". The saved
+choice is browser-only and never changes a CDN request or response cache key.
+
 Game text, controls, notifications, destination names, country labels and supporting
 pages are localized. Internal geographical names and mission identifiers do not
-change. A browser language-change event updates labels without reloading the world.
+change. Without a saved manual choice, browser language changes update labels without
+reloading the world; an explicit selection always takes priority.
 
 The shared language module and app code are content-hashed under `/app/` and cached
 for one year with `immutable`. Geography remains under `/assets/`, so changing copy

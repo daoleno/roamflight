@@ -20,6 +20,9 @@ aileron hinges and night navigation lights.
 Vite shares one hashed locale chunk across the game, credits, 404 and OAuth completion
 pages. All users receive identical HTML; locale never enters the CDN cache key.
 Geographical IDs remain in English internally and are localized only when rendered.
+A visible language selector stores an explicit browser-only preference in
+`roamflight.locale`, ahead of automatic detection. This is localStorage, not a cookie
+or server-side variant. Game titles and loading branding use only the active language.
 `src/aircraft.js` recenters the imported propeller before animating its nose-local
 axis. `src/audio.js` owns opt-in Web Audio playback, the layered soundscape,
 effects and fixed internal gain buses with automatic cue ducking. The only user

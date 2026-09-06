@@ -8,7 +8,7 @@ test('product branding changes without replacing upstream attribution', () => {
   const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
   assert.equal(pkg.name, 'roamflight');
   assert.match(html, /<title[^>]*>Roamflight/);
-  assert.match(html, /ROAMFLIGHT/);
+  assert.match(html, /data-i18n="app.name">Roamflight/);
   assert.match(html, /name="description"/);
   assert.doesNotMatch(html, /GEOGRAPHICAL|ADVENTURES/);
   assert.match(credits, /Sebastian/);

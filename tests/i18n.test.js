@@ -8,6 +8,7 @@ import {
   cityName,
   countryName,
   setCountryData,
+  preferredLocale,
 } from '../src/i18n.js';
 import { departures, destinations, findCountry } from '../src/geo.js';
 
@@ -18,6 +19,15 @@ test('browser language priority selects Chinese or English with an English fallb
   assert.equal(detectLocale(['fr-FR', 'zh-HK']), 'zh');
   assert.equal(detectLocale(['de-DE']), 'en');
   assert.equal(detectLocale([]), 'en');
+});
+test('manual language selection overrides browser language, with strictly monolingual titles', () => {
+  assert.equal(preferredLocale(['zh-CN'], 'en'), 'en');
+  assert.equal(preferredLocale(['en-US'], 'zh'), 'zh');
+  assert.equal(preferredLocale(['zh-CN'], 'invalid'), 'zh');
+  assert.equal(translate('en', 'app.title'), 'Roamflight');
+  assert.equal(translate('zh', 'app.title'), '漫航');
+  assert.equal(translate('en', 'app.name'), 'Roamflight');
+  assert.equal(translate('zh', 'app.name'), '漫航');
 });
 test('both bundled dictionaries have the same keys and interpolation contracts', () => {
   assert.deepEqual(Object.keys(messages.zh).sort(), Object.keys(messages.en).sort());

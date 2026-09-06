@@ -1,6 +1,8 @@
 export const messages = {
   en: {
-    'app.title': 'Roamflight | 漫航',
+    'app.title': 'Roamflight',
+    'app.name': 'Roamflight',
+    'controls.language': 'Language',
     'app.description':
       'Explore the real world from your own aircraft. Discover new journeys between cities, mountains and coastlines.',
     'app.game': 'Roamflight flight exploration game',
@@ -107,7 +109,9 @@ export const messages = {
     'auth.return': 'You can return to the conversation. No token needs to be copied.',
   },
   zh: {
-    'app.title': '漫航 | Roamflight',
+    'app.title': '漫航',
+    'app.name': '漫航',
+    'controls.language': '界面语言',
     'app.description': '驾驶你的飞机，飞越真实世界，在城市、山川与海岸之间发现新的旅程。',
     'app.game': '漫航飞行探索游戏',
     'app.canvas': '可交互的地球与飞机',
@@ -247,7 +251,21 @@ export function translate(locale, key, params = {}) {
   return message.replace(/\{(\w+)\}/g, (_, name) => String(params[name] ?? ''));
 }
 const browserLanguages = () => globalThis.navigator?.languages || [globalThis.navigator?.language];
-let locale = detectLocale(browserLanguages());
+export const LOCALE_STORAGE_KEY = 'roamflight.locale';
+export function preferredLocale(languages, saved) {
+  return saved === 'zh' || saved === 'en' ? saved : detectLocale(languages);
+}
+let storage;
+try {
+  storage = globalThis.localStorage;
+} catch {}
+let manualLocale = null;
+try {
+  const saved = storage?.getItem(LOCALE_STORAGE_KEY);
+  if (saved === 'zh' || saved === 'en') manualLocale = saved;
+} catch {}
+let locale = preferredLocale(browserLanguages(), manualLocale);
+const boundSelectors = new WeakSet();
 let formatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en');
 const countryCodes = new Map();
 const overrides = { France: 'FR', Norway: 'NO', Kosovo: 'XK' };
@@ -292,9 +310,25 @@ export function localizeDocument(root = document) {
     for (const node of root.querySelectorAll(selector))
       node.setAttribute(attribute, t(node.dataset[data]));
   }
+  for (const select of root.querySelectorAll('[data-language-switch]')) {
+    select.value = locale;
+    if (!boundSelectors.has(select)) {
+      select.addEventListener('change', () => selectLocale(select.value));
+      boundSelectors.add(select);
+    }
+  }
+}
+export function selectLocale(value) {
+  if (value !== 'zh' && value !== 'en') return false;
+  manualLocale = value;
+  try {
+    storage?.setItem(LOCALE_STORAGE_KEY, value);
+  } catch {}
+  refreshLocale();
+  return true;
 }
 export function refreshLocale() {
-  locale = detectLocale(browserLanguages());
+  locale = preferredLocale(browserLanguages(), manualLocale);
   formatter = new Intl.NumberFormat(locale === 'zh' ? 'zh-CN' : 'en');
   if (typeof document !== 'undefined') {
     localizeDocument();
@@ -306,4 +340,9 @@ if (typeof document !== 'undefined') {
     document.addEventListener('DOMContentLoaded', () => localizeDocument(), { once: true });
   else localizeDocument();
   window.addEventListener('languagechange', refreshLocale);
+  window.addEventListener('storage', (event) => {
+    if (event.key !== LOCALE_STORAGE_KEY) return;
+    manualLocale = event.newValue === 'zh' || event.newValue === 'en' ? event.newValue : null;
+    refreshLocale();
+  });
 }

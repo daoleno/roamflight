@@ -35,9 +35,8 @@ try {
       });
       await page.waitForFunction(() => window.__flight?.state.ready, {}, { timeout: 180000 });
       await page.locator('#loading').waitFor({ state: 'hidden' });
-      assert.equal(await page.title(), 'Roamflight | \u6f2b\u822a');
-      assert.equal(await page.locator('#identity strong').innerText(), 'ROAMFLIGHT');
-      assert.equal(await page.locator('#identity span').innerText(), '\u6f2b\u822a');
+      assert.equal(await page.title(), 'Roamflight');
+      assert.equal(await page.locator('#identity').innerText(), 'Roamflight');
       const result = await page.evaluate(() => {
         const a = document.querySelector('#identity').getBoundingClientRect(),
           b = document.querySelector('#toolbar').getBoundingClientRect();
