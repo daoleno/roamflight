@@ -26,12 +26,15 @@ try {
     await page.waitForFunction(() => window.__flight?.state.ready, {}, { timeout: 180000 });
     await page.locator('#loading').waitFor({ state: 'hidden' });
   };
-  await page.goto(base + '/?test=1&paused=1', { waitUntil: 'domcontentloaded' });
+  await page.goto(base + '/?test=1', { waitUntil: 'domcontentloaded' });
   await ready();
   assert.equal(await page.title(), '漫航');
   assert.equal(await page.locator('#identity').innerText(), '漫航');
   assert.equal(await page.locator('.loading-title').innerText(), '漫航');
-  assert.ok(await page.locator('#language-select').isVisible());
+  assert.equal(await page.locator('#language-select').isVisible(), false);
+  assert.equal(await page.locator('#game > #language-control').count(), 0);
+  await page.locator('#pause').click();
+  assert.ok(await page.locator('#pause-dialog #language-select').isVisible());
   const before = await page.evaluate(() => ({
     coords: window.__flight.state.coordinate,
     requests: performance.getEntriesByType('resource').length,
@@ -61,10 +64,11 @@ try {
     [1440, 900, 'en', 'Roamflight'],
   ]) {
     await page.setViewportSize({ width, height });
+    if (!(await page.locator('#pause-dialog').isVisible())) await page.locator('#pause').click();
     await page.locator('#language-select').selectOption(language);
     assert.equal(await page.title(), title);
     const overlaps = await page.evaluate(() => {
-      const ids = ['identity', 'language-control', 'toolbar', 'delivery'];
+      const ids = ['identity', 'toolbar', 'delivery'];
       const result = [];
       for (let i = 0; i < ids.length; i++)
         for (let j = i + 1; j < ids.length; j++) {
@@ -76,13 +80,29 @@ try {
       return result;
     });
     assert.deepEqual(overlaps, []);
+    const contained = await page.evaluate(() => {
+      const menu = document.getElementById('pause-dialog').getBoundingClientRect(),
+        control = document.getElementById('language-control').getBoundingClientRect();
+      return (
+        control.left >= menu.left &&
+        control.right <= menu.right &&
+        control.top >= menu.top &&
+        control.bottom <= menu.bottom
+      );
+    });
+    assert.equal(contained, true);
+    await page.screenshot({ path: new URL(`language-settings-${width}.png`, dir).pathname });
+    await page.locator('#resume').click();
+    assert.equal(await page.locator('#language-select').isVisible(), false);
     await page.screenshot({ path: new URL(`language-switch-${width}.png`, dir).pathname });
-    checks.push(`${width}x${height}: single-language title and non-overlapping selector`);
+    checks.push(
+      `${width}x${height}: language selector stays in settings, gameplay header stays clear`,
+    );
   }
   await page.goto(base + '/credits.html');
   await page.locator('[data-language-switch]').selectOption('zh');
   assert.equal(await page.title(), '致谢 | 漫航');
-  await page.goto(base + '/?test=1&paused=1', { waitUntil: 'domcontentloaded' });
+  await page.goto(base + '/?test=1', { waitUntil: 'domcontentloaded' });
   await ready();
   assert.equal(await page.title(), '漫航');
   checks.push('Language choice is shared by supporting pages and the game');

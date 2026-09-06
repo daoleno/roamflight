@@ -20,7 +20,6 @@ import {
   ArrowDown,
   ChevronsUp,
   RotateCcw,
-  Languages,
 } from 'lucide';
 import { createWorld, createPackage } from './world.js';
 import { rotatePropeller } from './aircraft.js';
@@ -60,7 +59,6 @@ const icons = {
   ArrowDown,
   ChevronsUp,
   RotateCcw,
-  Languages,
 };
 createIcons({ icons });
 function setIcon(id, name) {

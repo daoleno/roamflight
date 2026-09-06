@@ -28,18 +28,6 @@
         data-i18n-aria="app.canvas"
       ></canvas>
       <header id="identity"><strong data-i18n="app.name">Roamflight</strong></header>
-      <label id="language-control" data-i18n-title="controls.language">
-        <i data-lucide="languages" aria-hidden="true"></i>
-        <select
-          id="language-select"
-          data-language-switch
-          data-i18n-aria="controls.language"
-          aria-label="Language"
-        >
-          <option value="zh" lang="zh-CN">中文</option>
-          <option value="en" lang="en">English</option>
-        </select>
-      </label>
       <div
         id="toolbar"
         role="toolbar"
@@ -191,8 +179,21 @@
       <dialog id="pause-dialog">
         <h2 data-i18n="menu.paused">Flight paused</h2>
         <button id="resume" class="primary">
-          <i data-lucide="play"></i><span data-i18n="controls.resume">Resume flight</span></button
-        ><label
+          <i data-lucide="play"></i><span data-i18n="controls.resume">Resume flight</span>
+        </button>
+        <label id="language-control">
+          <span data-i18n="controls.language">Language</span>
+          <select
+            id="language-select"
+            data-language-switch
+            data-i18n-aria="controls.language"
+            aria-label="Language"
+          >
+            <option value="zh" lang="zh-CN">中文</option>
+            <option value="en" lang="en">English</option>
+          </select>
+        </label>
+        <label
           ><span data-i18n="menu.speed">Air speed</span
           ><input id="throttle" type="range" min="0.3" max="1.7" step="0.05" value="0.75" /></label
         ><label

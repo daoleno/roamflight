@@ -77,32 +77,6 @@ button {
 #identity strong {
   font-size: 21px;
 }
-#language-control {
-  position: absolute;
-  left: 30px;
-  top: 55px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  height: 28px;
-  color: #fff;
-}
-#language-control svg {
-  width: 15px;
-  height: 15px;
-  flex-shrink: 0;
-}
-#language-select {
-  width: 91px;
-  height: 28px;
-  border: 0;
-  border-radius: 3px;
-  background: #12374250;
-  color: white;
-  font-size: 11px;
-  padding: 0 5px;
-  cursor: pointer;
-}
 #language-select option {
   background: #184356;
   color: white;
@@ -499,15 +473,6 @@ dialog a {
   }
   #identity strong {
     font-size: 15px;
-  }
-  #language-control {
-    top: 44px;
-    left: 19px;
-    height: 26px;
-  }
-  #language-select {
-    height: 26px;
-    width: 84px;
   }
   #toolbar {
     top: 15px;

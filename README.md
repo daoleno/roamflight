@@ -91,7 +91,7 @@ preferred languages; unmatched languages fall back to English. The same static H
 and bundled dictionaries are served to everyone. No IP detection, language cookie,
 locale redirect, server rendering or `Vary: Accept-Language` is used.
 
-The language selector below the game title overrides automatic selection and remembers
+The language selector in the pause/settings menu overrides automatic selection and remembers
 the choice locally in `roamflight.locale`. It also appears on supporting pages.
 Chinese titles show only "漫航"; English titles show only "Roamflight". The saved
 choice is browser-only and never changes a CDN request or response cache key.
