@@ -27,7 +27,12 @@
         aria-label="Interactive Earth and aircraft"
         data-i18n-aria="app.canvas"
       ></canvas>
-      <header id="identity"><strong data-i18n="app.name">Roamflight</strong></header>
+      <canvas id="chart-ink" aria-hidden="true"></canvas>
+      <header id="identity">
+        <strong data-i18n="app.name">Roamflight</strong
+        ><a class="city-entry" href="/?region=chengdu" data-i18n="cd.enter">Fly Chengdu</a
+        ><span class="city-only" data-i18n="cd.region">Chengdu</span>
+      </header>
       <div
         id="toolbar"
         role="toolbar"
@@ -94,7 +99,8 @@
         </button>
       </div>
       <section id="delivery" aria-label="Current delivery" data-i18n-aria="hud.delivery">
-        <span class="eyebrow" data-i18n="hud.deliverTo">DELIVER TO</span>
+        <span class="city-only eyebrow" data-i18n="cd.waypoint">NEXT WAYPOINT</span
+        ><span class="world-only eyebrow" data-i18n="hud.deliverTo">DELIVER TO</span>
         <h1 id="destination">Cape Town</h1>
         <div id="destination-country">South Africa</div>
         <div class="delivery-stats">
@@ -104,7 +110,8 @@
       <div id="target" aria-hidden="true"><span></span><b id="target-label">Cape Town</b></div>
       <div id="country">
         <span id="country-prefix" data-i18n="hud.flyingOver">FLYING OVER</span
-        ><strong id="country-name">South Atlantic Ocean</strong>
+        ><strong id="country-name">South Atlantic Ocean</strong
+        ><small id="city-coordinate" class="city-only"></small>
       </div>
       <div id="compass" aria-label="Compass" data-i18n-aria="hud.compass">
         <span class="north" data-i18n="hud.north">N</span
@@ -128,6 +135,10 @@
       >
         <i data-lucide="package-open"></i><span data-i18n="controls.drop">Drop package</span>
       </button>
+      <button id="route-button" class="city-only drop" data-i18n="cd.routes">Routes</button>
+      <a class="city-only city-credit" href="/credits.html#chengdu" target="_blank" rel="noopener"
+        >© OpenStreetMap · ESA · Copernicus</a
+      >
       <div id="notification" role="status" aria-live="polite"></div>
       <div id="touch-controls">
         <button
@@ -181,6 +192,19 @@
         <button id="resume" class="primary">
           <i data-lucide="play"></i><span data-i18n="controls.resume">Resume flight</span>
         </button>
+        <a class="city-entry menu-region" href="/?region=chengdu" data-i18n="cd.enter"
+          >Fly Chengdu</a
+        >
+        <a class="city-only menu-region" href="/" data-i18n="cd.world">World flight</a>
+        <label class="city-only"
+          ><span data-i18n="cd.routes">Routes</span
+          ><select id="city-route">
+            <option value="west" data-i18n="route.west"></option>
+            <option value="east" data-i18n="route.east"></option>
+            <option value="north" data-i18n="route.north"></option>
+            <option value="south" data-i18n="route.south"></option>
+            <option value="lake" data-i18n="route.lake"></option></select
+        ></label>
         <label id="language-control">
           <span data-i18n="controls.language">Language</span>
           <select
@@ -200,9 +224,10 @@
           ><span data-i18n="menu.clouds">Clouds</span
           ><input id="cloud-toggle" type="checkbox" checked /></label
         ><label
-          ><span data-i18n="menu.borders">Country borders</span
+          ><span class="city-only" data-i18n="cd.boundaries">District borders on map</span
+          ><span class="world-only" data-i18n="menu.borders">Country borders</span
           ><input id="border-toggle" type="checkbox" checked /></label
-        ><label
+        ><label class="world-only"
           ><span data-i18n="menu.departure">Departure</span
           ><select id="departure">
             <option value="africa" data-i18n="region.africa">Southern Africa</option>
@@ -222,7 +247,8 @@
       <div id="loading">
         <div class="loading-title"><b data-i18n="app.name">Roamflight</b></div>
         <progress id="load-progress" value="0" max="100"></progress
-        ><span id="load-status" data-i18n="loading.earth">Loading Earth</span>
+        ><span id="load-status" data-i18n="loading.earth">Loading Earth</span
+        ><a class="city-entry" href="/?region=chengdu" data-i18n="cd.enter">Fly Chengdu</a>
       </div>
       <div id="failure" hidden>
         <h2 data-i18n="errors.title">Unable to start the flight</h2>

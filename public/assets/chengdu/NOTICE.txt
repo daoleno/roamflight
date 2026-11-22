@@ -1,0 +1,20 @@
+Chengdu regional atlas for Roamflight
+
+Administrative polygons, major roads, rivers, canals, airport geometry and landmark coordinates: © OpenStreetMap contributors, ODbL 1.0.
+https://www.openstreetmap.org/copyright
+https://opendatacommons.org/licenses/odbl/1-0/
+Geofabrik Sichuan snapshot sichuan-260101.osm.pbf. Chengdu relation 2110264 and its twenty county-level subareas. atlas.json is the distributed, machine-readable simplified boundary, terminal and runway database under ODbL. The roadway and waterway overlay in surface.webp is a Produced Work. The original PBF and the extraction instructions are available using sources.json and scripts/prepare-chengdu.py.
+https://download.geofabrik.de/asia/china/sichuan/sichuan-260101.osm.pbf
+
+Height field produced using Copernicus WorldDEM-90 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved.
+https://doi.org/10.5270/ESA-c5d3d65
+Original GLO-90 licence included as Copernicus-DEM-license.pdf.
+The regional height field is averaged, quantized to metres, and vertically exaggerated for display.
+
+© ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium.
+ESA WorldCover 2021 v200 (Zanaga et al., 2022). CC BY 4.0.
+https://doi.org/10.5281/zenodo.7254221
+https://creativecommons.org/licenses/by/4.0/
+surface.webp reclassifies and recolours cover samples. urban.png aggregates the built-up class. Individual buildings are illustrative.
+
+Source byte checksums and exact input URLs are in sources.json. Runtime requires no remote tiles, credentials or tracking.

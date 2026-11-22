@@ -33,6 +33,10 @@ The geography uses a right-handed WebGL coordinate system. Original Unity mesh
 positions and normal-map Z components are reflected. Unit tests verify compass
 directions, coordinate round trips, country containment and triangle winding.
 
+## Chengdu regional flight
+
+The Chengdu entry loads a separate WGS84 regional atlas in place of the globe assets. It reuses the FBX aircraft builder, keyboard and pointer inputs, camera controls, audio and responsive HUD. Its orthographic chart redraws the same terrain from above and projects the aircraft and route onto it. Regional flight, data preparation, projection and geographic simplifications are described in [Chengdu](CHENGDU.md).
+
 ## Production Service
 
 `server/app.mjs` exposes only the build directory with Express, sirv and Helmet.

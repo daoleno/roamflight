@@ -42,9 +42,7 @@ Discovery records, rewards and unlocks are planned, not current functionality.
 - **City:** recognizable skylines, landmarks, local routes and low-altitude exploration.
 - **Pilot:** varied aircraft, skills, discoveries and a personal travel history.
 
-The prototype currently covers the world layer and a simple delivery loop. City
-detail and the pilot progression layer require new data, streaming, performance
-budgets and game-design work; they are not merely camera settings.
+The prototype covers world flight and deliveries, plus continuous regional exploration in Chengdu. Its roads, waterways, settlement cover and highlands use geographic source data. Individual building shapes are illustrative. Other city regions, pilot progression and unlocks are planned.
 
 ## What This Is Not
 

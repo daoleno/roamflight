@@ -1,0 +1,14 @@
+{
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N29_00_E102_00_DEM/Copernicus_DSM_COG_30_N29_00_E102_00_DEM.tif": "1d2750744119503a32ecf47d1a8b240df44f07f889839227cb7b0d4fc238d9e5",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N29_00_E103_00_DEM/Copernicus_DSM_COG_30_N29_00_E103_00_DEM.tif": "6f9462ee9aeed3bff953820fc621dc0dac3a44381570e3471515e8dd3a313a6a",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N29_00_E104_00_DEM/Copernicus_DSM_COG_30_N29_00_E104_00_DEM.tif": "0e73f38b637f0b81e2db34aa619b9e3d04a2c445de89697026d47b51238adc94",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N30_00_E102_00_DEM/Copernicus_DSM_COG_30_N30_00_E102_00_DEM.tif": "4c82f297117504cbe69366f63f047854b0eeadf515b50a7ace8394dc9fd3ae7f",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N30_00_E103_00_DEM/Copernicus_DSM_COG_30_N30_00_E103_00_DEM.tif": "2009766e446d6a33537e013dc0fa1944ce51857b0574182583e2d35eca2a8ab8",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N30_00_E104_00_DEM/Copernicus_DSM_COG_30_N30_00_E104_00_DEM.tif": "a6807a37ba7939efe09cef96917eb615d3d2981003b7fa1ea4bd315ec3b885af",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N31_00_E102_00_DEM/Copernicus_DSM_COG_30_N31_00_E102_00_DEM.tif": "60b9607f51d552142bf8a2ea3b21b08c1f5ac50cae1f3492fc57235c069f7f7e",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N31_00_E103_00_DEM/Copernicus_DSM_COG_30_N31_00_E103_00_DEM.tif": "8ac838093f914969aa004f0900d4bd4b660428ebb362c9e21f071fb343ed26c0",
+  "https://copernicus-dem-90m.s3.eu-central-1.amazonaws.com/Copernicus_DSM_COG_30_N31_00_E104_00_DEM/Copernicus_DSM_COG_30_N31_00_E104_00_DEM.tif": "d8d2c420aed4763ced1c11a5b8dfa16487ccc522cd2ed0652412e0af7162c5ea",
+  "https://download.geofabrik.de/asia/china/sichuan/sichuan-260101.osm.pbf": "5ab5697a446b3ae82163e7993661b4dee8a00701e180ceaf6d90f183bdf1030d",
+  "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N27E102_Map.tif": "c4ace3d034a41739ed872fc20a35fef791086bea5c0169a8226ea12732745c20",
+  "https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N30E102_Map.tif": "03b137637b20922f19409e8a1b2a3db65efd83a0f9b782c887f13ed9fc878ff4"
+}

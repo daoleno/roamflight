@@ -10,9 +10,8 @@ These are planned stages, not features included in the current build.
 
 1. **World exploration:** refine country/region routes, flight feel, audio, scenery
    and varied objectives around the existing real-world globe.
-2. **City-scale flying:** prototype one city with recognizable landmarks, local
-   routes and streamed detail; establish data licensing and mobile performance
-   budgets before attempting worldwide coverage.
+2. **City-scale flying:** extend the playable Chengdu regional atlas with finer landmark
+   detail and investigate streamed assets for future regions.
 3. **A pilot's journey:** add discovery records, meaningful rewards, aircraft
    variation and route unlocks that connect individual flights into a longer game.
 4. **Broader world coverage:** extend verified city and regional pipelines to more

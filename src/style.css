@@ -608,3 +608,80 @@ dialog a {
     bottom: 32px;
   }
 }
+body:not(.chengdu) .city-only,
+.chengdu .world-only,
+.chengdu .city-entry,
+.chengdu #drop,
+#chart-ink {
+  display: none !important;
+}
+#identity .city-entry,
+#identity .city-only {
+  display: block;
+  width: max-content;
+  margin-top: 7px;
+  font-size: 12px;
+  color: #fff4b6;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+#identity .city-entry {
+  pointer-events: auto;
+  text-decoration: none;
+  border-bottom: 1px solid #ffeb91;
+}
+#loading .city-entry,
+dialog .menu-region {
+  color: #ffe58c;
+  font-size: 14px;
+  line-height: 2;
+}
+#chart-ink {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.chengdu.map-mode #chart-ink {
+  display: block !important;
+}
+.chengdu.map-mode #target,
+.chengdu.map-mode #touch-controls,
+.chengdu.map-mode #altitude-controls {
+  display: none !important;
+}
+#city-coordinate {
+  display: block;
+  font-size: 11px;
+  margin-top: 4px;
+  letter-spacing: 0.04em;
+}
+.city-credit {
+  position: absolute;
+  bottom: 5px;
+  right: 10px;
+  font: 10px system-ui;
+  color: #fff;
+  text-shadow: 0 1px 3px #153f43;
+  text-decoration: none;
+  background: #14363885;
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+#route-button {
+  min-width: 84px;
+  font-size: 13px;
+}
+.chengdu.map-mode #delivery {
+  max-width: 48vw;
+}
+@media (max-width: 700px) {
+  #route-button {
+    border-radius: 8px;
+    padding: 0 10px;
+    min-height: 40px;
+    height: 40px;
+    width: auto;
+  }
+}

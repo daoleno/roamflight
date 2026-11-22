@@ -69,7 +69,7 @@ function setIcon(id, name) {
 const canvas = $('world');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 3000);
-let renderer, world;
+let renderer, world, region;
 const params = new URLSearchParams(location.search);
 const state = {
   ready: false,
@@ -163,24 +163,33 @@ async function start() {
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.04;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    world = await createWorld(renderer, scene, (value) => {
-      $('load-progress').value = value;
-      loadingKey =
-        value < 60 ? 'loading.textures' : value < 80 ? 'loading.terrain' : 'loading.flight';
+    if (params.get('region') === 'chengdu') {
+      document.body.classList.add('chengdu');
+      loadingKey = 'cd.loading';
       $('load-status').textContent = t(loadingKey);
-    });
-    setCountryData(world.countries);
-    orbit = new OrbitControls(camera, canvas);
-    orbit.enabled = false;
-    orbit.enableDamping = true;
-    orbit.dampingFactor = 0.08;
-    orbit.minDistance = 145;
-    orbit.maxDistance = 430;
-    orbit.enablePan = false;
-    marker = createMarker();
-    scene.add(marker);
-    trails = createTrails();
-    setDeparture(params.get('departure') || 'africa');
+      const { createChengdu } = await import('./chengdu.js');
+      region = await createChengdu(renderer, scene, camera, state, notify);
+      $('load-progress').value = 100;
+    } else {
+      world = await createWorld(renderer, scene, (value) => {
+        $('load-progress').value = value;
+        loadingKey =
+          value < 60 ? 'loading.textures' : value < 80 ? 'loading.terrain' : 'loading.flight';
+        $('load-status').textContent = t(loadingKey);
+      });
+      setCountryData(world.countries);
+      orbit = new OrbitControls(camera, canvas);
+      orbit.enabled = false;
+      orbit.enableDamping = true;
+      orbit.dampingFactor = 0.08;
+      orbit.minDistance = 145;
+      orbit.maxDistance = 430;
+      orbit.enablePan = false;
+      marker = createMarker();
+      scene.add(marker);
+      trails = createTrails();
+      setDeparture(params.get('departure') || 'africa');
+    }
     if (params.get('paused') === '1') state.paused = true;
     if (params.get('view') === 'globe') toggleMap();
     state.ready = true;
@@ -190,7 +199,20 @@ async function start() {
     renderer.setAnimationLoop(frame);
     window.__flight = {
       get state() {
+        if (region)
+          return {
+            ready: state.ready,
+            paused: state.paused,
+            map: state.map,
+            view: state.view,
+            night: state.night,
+            elapsed: state.elapsed,
+            meshes: renderer.info.render.calls,
+            triangles: renderer.info.render.triangles,
+            ...region.inspect(),
+          };
         return {
+          region: 'world',
           ready: state.ready,
           locale: getLocale(),
           paused: state.paused,
@@ -276,6 +298,10 @@ function updateMission() {
 }
 
 function setDeparture(key) {
+  if (region) {
+    region.reset();
+    return;
+  }
   const config = departures[key] || departures.africa;
   state.up.copy(toPoint(...config.coordinate));
   state.forward.copy(headingVector(state.up, config.heading));
@@ -322,12 +348,13 @@ function setPaused(value) {
 }
 
 function toggleMap() {
-  if (!world || state.paused) return;
+  if ((!world && !region) || state.paused) return;
   state.map = !state.map;
-  orbit.enabled = state.map;
+  if (orbit) orbit.enabled = state.map;
   document.body.classList.toggle('map-mode', state.map);
   $('globe').setAttribute('aria-pressed', String(state.map));
   $('drop').disabled = state.map;
+  if (region) return;
   if (state.map) {
     const right = state.up.clone().cross(state.forward).normalize();
     camera.position
@@ -363,7 +390,8 @@ function toggleNight() {
 }
 
 function dropPackage() {
-  if (!state.ready || state.paused || state.map || state.elapsed - state.lastDrop < 1.2) return;
+  if (region || !state.ready || state.paused || state.map || state.elapsed - state.lastDrop < 1.2)
+    return;
   state.lastDrop = state.elapsed;
   state.totalDropped++;
   const item = createPackage(scene, state.up, state.forward, world.groundRadius);
@@ -608,32 +636,42 @@ function updateTarget() {
   }
 }
 
+function flightInput() {
+  return {
+    turn:
+      Number(keys.has('ArrowRight') || keys.has('KeyD')) -
+      Number(keys.has('ArrowLeft') || keys.has('KeyA')),
+    accelerate:
+      (keys.has('ArrowUp') || keys.has('KeyW') ? 1 : 0) -
+      (keys.has('ArrowDown') || keys.has('KeyS') ? 1 : 0),
+    climb: (keys.has('KeyE') ? 1 : 0) - (keys.has('KeyQ') ? 1 : 0),
+    boost: keys.has('ShiftLeft') || keys.has('ShiftRight'),
+  };
+}
 function frame(now) {
   const dt = Math.min(0.1, Math.max(0.001, (now - last) / 1000));
   last = now;
+  const input = flightInput();
+  if (region) {
+    region.render(dt, input);
+    audio.update({
+      speed: state.speed,
+      bank: state.bank,
+      map: state.map,
+      night: state.night,
+      country: 'China',
+      boost: input.boost,
+    });
+    return;
+  }
   if (!state.paused && !state.map) {
     state.elapsed += dt;
-    const turn =
-      (keys.has('ArrowRight') || keys.has('KeyD') ? 1 : 0) -
-      (keys.has('ArrowLeft') || keys.has('KeyA') ? 1 : 0);
     terrainElapsed += dt;
     if (terrainElapsed > 0.14) {
       ground = world.groundRadius(state.up);
       terrainElapsed = 0;
     }
-    stepFlight(
-      state,
-      {
-        turn,
-        accelerate:
-          (keys.has('ArrowUp') || keys.has('KeyW') ? 1 : 0) -
-          (keys.has('ArrowDown') || keys.has('KeyS') ? 1 : 0),
-        climb: (keys.has('KeyE') ? 1 : 0) - (keys.has('KeyQ') ? 1 : 0),
-        boost: keys.has('ShiftLeft') || keys.has('ShiftRight'),
-      },
-      dt,
-      ground,
-    );
+    stepFlight(state, input, dt, ground);
     updatePackages(dt);
     world.uniforms.time.value = state.elapsed;
   }
@@ -731,6 +769,11 @@ $('daylight').onclick = toggleNight;
 $('sound').onclick = () => toggleSound();
 $('fullscreen').onclick = fullscreen;
 $('drop').onclick = dropPackage;
+$('route-button').onclick = () => {
+  setPaused(true);
+  $('city-route').focus();
+};
+$('city-route').onchange = (e) => region?.selectRoute(e.target.value);
 $('throttle').oninput = (e) => {
   state.throttle = Number(e.target.value);
 };
@@ -781,6 +824,7 @@ window.addEventListener('roamflight:language', () => {
     updateMission();
     updateHud();
   }
+  region?.hud();
   renderNotice();
 });
 window.addEventListener('keydown', (e) => {
