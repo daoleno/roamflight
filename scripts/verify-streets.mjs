@@ -48,7 +48,7 @@ async function run(mobile) {
   });
   p.on('response', (v) => {
     if (v.status() >= 400) r.errors.push(v.status() + ' ' + v.url());
-    if (v.url().endsWith('.pack'))
+    if (new URL(v.url()).pathname.endsWith('.pack'))
       r.packResponses[v.status()] = (r.packResponses[v.status()] || 0) + 1;
   });
   async function shot(label) {

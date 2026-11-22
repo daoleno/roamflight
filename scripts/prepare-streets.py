@@ -4,7 +4,7 @@
 # requires-python = ">=3.12"
 # dependencies = ["overturemaps==2.1.1","pyarrow==26.0.1","numpy==2.5.5","shapely==2.2.0","osmium==4.3.2","orjson==3.13.0","requests==2.34.2","rasterio==1.5.2","pyproj==3.8.0"]
 # ///
-import sys, math, gzip, tempfile, hashlib, re
+import sys, math, gzip, tempfile, hashlib, re, subprocess
 from pathlib import Path
 from collections import defaultdict, Counter
 import osmium, shapely as sh, numpy as np, pyarrow.parquet as pq, orjson, requests
@@ -29,6 +29,10 @@ if not pbf.exists():
 assert (
     hashlib.sha256(pbf.read_bytes()).hexdigest()
     == "81e69e480c753e8cd253b09015b13707e09eb61ed24dac7b66ec1bf0f991ea2c"
+)
+subprocess.run(
+    [sys.executable, str(root / "scripts/prepare-street-districts.py"), str(cache)],
+    check=True,
 )
 for kind in ("building", "place"):
     path = cache / (kind + ".parquet")
@@ -76,7 +80,7 @@ def unproject(x, y):
 
 areas = [
     sh.union_all([Polygon(r[0], r[1:]) for r in a["polygons"]])
-    for a in atlas["areas"][1:]
+    for a in orjson.loads((out / "districts.json").read_bytes())
 ]
 tree = sh.STRtree(areas)
 names = [a["zh"] for a in atlas["areas"][1:]]
@@ -234,6 +238,10 @@ categories = {
 
 
 def category(t):
+    if t.get("highway") == "bus_stop":
+        return "公交站"
+    if t.get("building") == "pavilion" and t.get("name") == "合江亭":
+        return "历史建筑"
     if t.get("landuse") in ("commercial", "retail"):
         return "商业街区"
     for k, default in [
@@ -398,6 +406,13 @@ for batch in pq.ParquetFile(cache / "place.parquet").iter_batches():
             continue
         n = (r["names"] or {}).get("primary", "")
         if not n or not re.search(r"[\u4e00-\u9fff]", n):
+            continue
+        # This Overture historic-site point is on the opposite bank, 278 m from the documented pavilion (OSM relation 20275315).
+        if (
+            n == "合江亭"
+            and r["basic_category"] == "historic_site"
+            and math.dist(project(x, y), (7666, 6339)) < 3
+        ):
             continue
         d = district(x, y)
         # Keep the original source category for the information card.

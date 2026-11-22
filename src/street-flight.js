@@ -22,11 +22,12 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   const credit = document.querySelector('.city-credit');
   credit.href = '/credits.html#streets';
   credit.textContent = '© OpenStreetMap · Overture · Copernicus';
-  const [index, atlas, buffer, model] = await Promise.all([
-    read(streetRoot + 'index.json'),
+  const [index, atlas, buffer, model, districts] = await Promise.all([
+    read(streetRoot + 'index.json?districts=2'),
     read('/assets/chengdu/atlas.json'),
     read('/assets/chengdu/height.bin', false),
     loadAircraft(scene),
+    read(streetRoot + 'districts.json'),
   ]);
   const heights = new Int16Array(buffer),
     terrain = makeTerrain(atlas, heights),
@@ -113,7 +114,14 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   }
   function districtAt(x, z) {
     const co = geographic(x / 1000, z / 1000);
-    return atlas.areas.slice(1).findIndex((a) => contains(a, co));
+    return districts.findIndex(
+      (a) =>
+        co[0] >= a.bounds[0] &&
+        co[1] >= a.bounds[1] &&
+        co[0] <= a.bounds[2] &&
+        co[1] <= a.bounds[3] &&
+        contains(a, co),
+    );
   }
   const chart = streetChart(
     tiles,
@@ -174,7 +182,7 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   }
   function hud() {
     const coord = geographic(f.x / 1000, f.z / 1000);
-    f.district = atlas.areas.slice(1).find((a) => contains(a, coord))?.zh || '成都市界外';
+    f.district = districts[districtAt(f.x, f.z)]?.zh || '成都市界外';
     $('country-name').textContent = tiles.readyAt(f.x, f.z)
       ? nearest || f.district
       : '正在载入街区…';

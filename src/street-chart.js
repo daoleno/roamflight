@@ -18,11 +18,14 @@ export function streetChart(tiles, index, flight, navigate, depart, close, distr
     (x - center.x) * scale() + innerWidth / 2,
     (z - center.z) * scale() + innerHeight / 2,
   ];
+  function locality(p) {
+    if (p[0] === '安顺廊桥' && Math.hypot(p[2] - 7973, p[3] - 6208) < 90) return '锦江区 / 武侯区';
+    return index.districts[p[4] ?? districtAt(p[2], p[3])] || '成都市界外';
+  }
   function select(p, pan = true) {
     selected = p;
     $('street-name').textContent = p[0];
-    $('street-type').textContent =
-      (index.districts[p[4]] || '成都市界外') + ' · ' + categoryName(p[1]) + ' · ' + p[5];
+    $('street-type').textContent = locality(p) + ' · ' + categoryName(p[1]) + ' · ' + p[5];
     const building = tiles.buildingAt(p[2], p[3]);
     const evidence = building
       ? ['高度缺资料，示意', '资料记载高度', '按层数估高', '2020 遥感估高', '廊屋示意高度'][
@@ -59,13 +62,13 @@ export function streetChart(tiles, index, flight, navigate, depart, close, distr
     const seen = new Set(),
       buttons = [];
     for (const p of matches) {
-      const key = p[0] + '/' + p[4] + '/' + p[1];
+      const key = p[0] + '/' + locality(p) + '/' + p[1];
       if (seen.has(key)) continue;
       seen.add(key);
       const b = document.createElement('button');
       b.textContent = seen.has(p[0]) ? p[0] + ' · ' + categoryName(p[1]) : p[0];
       seen.add(p[0]);
-      b.title = (index.districts[p[4]] || '成都市界外') + ' · ' + categoryName(p[1]);
+      b.title = locality(p) + ' · ' + categoryName(p[1]);
       b.onclick = () => {
         select(p);
         $('street-query').blur();
@@ -80,7 +83,7 @@ export function streetChart(tiles, index, flight, navigate, depart, close, distr
   }
   function loadPlaces() {
     if (!loading)
-      loading = fetch(streetRoot + 'places.gzdata')
+      loading = fetch(streetRoot + 'places.gzdata?districts=2')
         .then((r) => {
           if (!r.ok) throw Error();
           return r.arrayBuffer();

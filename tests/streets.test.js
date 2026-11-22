@@ -60,3 +60,21 @@ test('twenty districts have measured street inventory and the searchable records
     ),
   );
 });
+
+test('the historical pavilion lies in Jinjiang and the covered bridge connects both district banks', async () => {
+  const { contains, geographic } = await import('../src/chengdu-geo.js');
+  const districts = JSON.parse(file('districts.json'));
+  const at = (x, z) => districts.find((a) => contains(a, geographic(x / 1000, z / 1000)))?.zh;
+  const [, , x, z] = guide.find((p) => p[0] === '合江亭');
+  assert.equal(at(x, z), '锦江区');
+  assert.equal(at(7981, 6167), '锦江区');
+  assert.equal(at(7957, 6243), '武侯区');
+  const candidates = JSON.parse(gunzipSync(file('places.gzdata'))).filter((p) => p[0] === '合江亭');
+  assert.deepEqual(
+    candidates.map((p) => [p[1], index.districts[p[4]]]).sort(),
+    [
+      ['公交站', '锦江区'],
+      ['历史建筑', '锦江区'],
+    ].sort(),
+  );
+});

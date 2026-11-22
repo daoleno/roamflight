@@ -310,7 +310,7 @@ export function streetTiles(scene, index, ground) {
     pending.set(key, ctl);
     try {
       const response = await fetch(
-        streetRoot + Math.floor(i / 8) + '_' + Math.floor(j / 8) + '.pack',
+        streetRoot + Math.floor(i / 8) + '_' + Math.floor(j / 8) + '.pack?districts=2',
         { headers: { Range: 'bytes=' + start + '-' + (start + length - 1) }, signal: ctl.signal },
       );
       if (!response.ok) throw Error('Street tile ' + response.status);
