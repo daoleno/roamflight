@@ -11,7 +11,7 @@ complete a flight or delivery, and set out again.
 
 ![Roamflight current playable prototype](docs/images/roamflight.png)
 
-Choose **Fly Chengdu** in the HUD or pause menu to leave the globe and fly from Tianfu Square across the municipality. Five regional routes share a terrain-aware flight chart. The pause menu returns to world flight. See [Chengdu geography and controls](docs/CHENGDU.md).
+Choose **Fly Chengdu** in the HUD or pause menu to enter street-scale flight over Tianfu Square. Search Chinese street names, follow the central tour or depart from another district. Choose **Chengdu regional cruise** for cross-municipal flight. Five regional routes share a terrain-aware flight chart. The pause menu returns to world flight. See [Chengdu geography and controls](docs/CHENGDU.md).
 
 ## Play
 

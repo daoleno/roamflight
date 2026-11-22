@@ -81,7 +81,7 @@ async function examine(mobile) {
       ].reduce((n, r) => n + r.transferSize, 0),
     );
     await tap('#pause');
-    await tap('#pause-dialog .city-entry');
+    await tap('#regional-entry');
     await ready();
     assert.equal((await state()).region, 'chengdu');
     run.regionAfterWorldBytes = await page.evaluate(() =>
@@ -235,7 +235,7 @@ async function examine(mobile) {
     await cdp.send('Network.enable');
     await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
     const begin = Date.now();
-    await page.goto(new URL('/?region=chengdu', base).href);
+    await page.goto(new URL('/?region=chengdu&mode=region', base).href);
     await ready();
     run.cold = await page.evaluate(() => {
       const entries = [

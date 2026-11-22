@@ -1,6 +1,23 @@
 # 成都全域 · Chengdu
 
-Enter from **Fly Chengdu** on the flight HUD, the loading screen, or the pause menu. The direct entry is `/?region=chengdu`. The plane starts over Tianfu Square facing the Dujiangyan irrigation headworks. The yellow **Flight routes** button opens the route selector. Changing a route keeps the aircraft in place. Restarting a flight returns to the square and aligns the nose with the first waypoint. Fly within 1.65 km to register a visit. The pause menu links back to the globe.
+## 街区慢飞
+
+HUD 或暂停菜单的「飞往成都」与 `/?region=chengdu` 从天府广场上空进入街区。左右转向，E/Q 升降，W/S 调节油门，Shift 加速；手机用屏幕上的方向、升降和加速键。开「找地点」或 M 暂停在当前位置，航图可拖动、缩放、搜索中文。选择「导航到这里」保留机位，「从这里起飞」则在所选地点开始。暂停菜单可在当前机位切换到全域巡航，或返回世界。
+
+街区模式的米制坐标与区域 WGS84 投影一致。飞机翼展 10.8 m，水平、垂直位移与地形均为 1:1。空速和秒表按模拟秒计算，遇长帧限制步长。最低地面净空 14 m，楼顶至少 9 m；接近屋顶时向前探测并抬升。实景表面来自较粗的区域高程格网，街区斜坡和桥下空间简化。街区模式独立使用实际建筑外轮廓。城区核心范围附有 10 m 分辨率地表色，其余按真实道路、水系、绿地和屋顶几何着色。
+
+街区数据可按以下步骤重制。脚本下载锁定的四川 PBF 与 Overture 发布版、裁至 20 个区县（跨界要素按代表点归属），生成 `public/assets/streets-v1`。道路和水岸按 0.65 m 简化，坐标量化为米，保留庭院孔洞。缺道路宽度时按道路类别示意。补充地点资料有地域和日期差异，名称索引按位置及类别去重。
+
+```sh
+uv run --script scripts/prepare-streets.py "$TMPDIR/chengdu-streets"
+uv run --script scripts/prepare-street-imagery.py
+```
+
+`index.json` 包含逻辑瓦片边长、区县名称和 `i,j → [字节偏移, 长度]`。每块 1200 m，`floor(i/8)_floor(j/8).pack` 内每个范围是一段独立 gzip JSON。建筑记录为种类、名称、[米高, 高度来源]、各环交替的局部 x/z；高度来源 0 表示缺资料示意，1 表示来源高度，2 表示层数估高，3 表示 CNBH-10m 2020 遥感估高。街区索引和数据可直接下载，查找地点时才读取 `places.gzdata`。驾驶时保留周边九块，放大或缩小航图时按范围加载并释放旧图块。数据版本、许可、各区计数及高度覆盖见游戏署名页。
+
+## Regional cruise
+
+Choose **Chengdu regional cruise** on the flight HUD, the loading screen, or the pause menu. The regional entry is `/?region=chengdu&mode=region`. The plane starts over Tianfu Square facing the Dujiangyan irrigation headworks. The yellow **Flight routes** button opens the route selector. Changing a route keeps the aircraft in place. Restarting a flight returns to the square and aligns the nose with the first waypoint. Fly within 1.65 km to register a visit. The pause menu links back to the globe.
 
 The globe's steering, throttle, boost, pitch, camera, sound, day/night and touch controls also operate here. A/D or ←/→ steer, W/S change throttle, Shift boosts, E/Q climb and descend. M toggles the north-up chart. The orange arrow is the aircraft, the yellow dashed line leads through the remaining waypoints. The bottom instrument reports metres above local terrain. Flight speed is stylized, with approximately 25× time compression relative to the indicated airspeed.
 
@@ -21,3 +38,7 @@ uv run --script scripts/prepare-chengdu.py "$TMPDIR/chengdu-data"
 ```
 
 The script checks the SHA-256 of each input against `public/assets/chengdu/sources.json`. It writes the packaged assets to the same directory as the manifest. The game only fetches these static derivatives in regional mode. Input sources, modification notices and licences are linked from the in-game credits. The map and flight use the same mesh and surface. Scene diagnosis is available read-only through `window.__flight.state`.
+
+### 遥感估高的适用范围
+
+已有建筑高度、已有层数依次优先。仅在缺两者时使用 CNBH-10m。直接将建筑环投影至 EPSG:32648，在源 10 m 格网上取样。屋顶至少 600 m²，采样中心须在向内缩约 7.07 m 的轮廓内，使整个方格留在轮廓中。至少四个有效像元，有效比例至少 75%，四分位间距至多为 6 m 或中位数的 35%（取较大者）。成都 2,008 个交叉样本中，遥感结果低于 20 m 的组与统一 8 m 相比未改善平均绝对误差。因此仅在上述条件成立且中位数取整达到 20 m 时采用遥感值，超大范围规则抽样至每轴最多 32 点。门槛处理了小屋顶、院落、无值和高度混杂。2020 年之后的新建改建、遥感模型对高楼的低估仍会影响结果。逐区计数与两个输入的真实坐标范围可下载。重制脚本把有楼高或层数记录的重合样本写到缓存 cnbh-validation.json，列依次为经度、纬度、区县、参考来源、参考米高、遥感米高和有效像元数。[CNBH 版本与许可](https://doi.org/10.5281/zenodo.7923866)

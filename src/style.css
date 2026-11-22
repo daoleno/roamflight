@@ -685,3 +685,149 @@ dialog .menu-region {
     width: auto;
   }
 }
+#street-labels,
+#street-search,
+#street-map-tools,
+#slow-entry {
+  display: none;
+}
+.chengdu:not(.streets) #slow-entry {
+  display: block;
+}
+.chengdu:not(.streets) #regional-entry,
+.streets label:has(#city-route),
+.streets label:has(#cloud-toggle),
+.streets label:has(#border-toggle),
+.streets #target {
+  display: none !important;
+}
+.streets:not(.map-mode) #street-labels {
+  display: block;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+#street-labels span {
+  position: absolute;
+  transform: translate(-50%, -105%);
+  padding: 3px 7px;
+  border-radius: 3px;
+  background: #1d383dc9;
+  color: #fff;
+  font: 600 12px/1.3 system-ui;
+  white-space: nowrap;
+}
+#street-labels .wayfinding {
+  background: #ffe498;
+  color: #34443d;
+}
+.streets.map-mode #chart-ink {
+  pointer-events: auto;
+  touch-action: none;
+}
+.streets.map-mode #delivery,
+.streets.map-mode #route-button,
+.streets.map-mode #country {
+  display: none;
+}
+.streets.map-mode #street-search {
+  display: block;
+  position: absolute;
+  top: 86px;
+  left: 20px;
+  width: min(310px, calc(100% - 78px));
+  z-index: 4;
+  font: 14px/1.5 system-ui;
+  color: #263d37;
+}
+#street-query,
+#street-info,
+#street-results:not(:empty),
+#street-map-tools button {
+  border: 1px solid #a5b4a6;
+  background: #fcfbf3f7;
+  box-shadow: 0 3px 13px #24372e1f;
+  border-radius: 7px;
+}
+#street-query {
+  width: 100%;
+  padding: 10px 13px;
+  font: inherit;
+  font-size: 16px;
+  color: #263d37;
+}
+#street-results:not(:empty) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 6px;
+  margin-top: 3px;
+}
+#street-results button,
+#street-info button {
+  font: inherit;
+  background: #e5eadf;
+  color: #204c43;
+  border: 0;
+  border-radius: 4px;
+  padding: 5px 8px;
+}
+#street-info {
+  margin-top: 5px;
+  padding: 12px;
+}
+#street-info strong,
+#street-info small {
+  display: block;
+}
+#street-info strong {
+  font-size: 19px;
+}
+#street-info p {
+  margin: 5px 0;
+}
+#street-source {
+  font-size: 11px;
+  color: #37685f;
+}
+#street-info button {
+  margin: 6px 5px 0 0;
+}
+#street-info #street-nav {
+  background: #285e51;
+  color: white;
+}
+.streets.map-mode #street-map-tools {
+  position: absolute;
+  display: grid;
+  right: 16px;
+  bottom: 50px;
+  z-index: 4;
+  gap: 4px;
+}
+#street-map-tools button {
+  padding: 0;
+  white-space: nowrap;
+  color: #284a40;
+  font: 600 17px system-ui;
+  width: 44px;
+  height: 42px;
+}
+.streets.map-mode #toolbar,
+.streets.map-mode #identity,
+.streets.map-mode .city-credit {
+  z-index: 3;
+}
+@media (max-width: 700px) {
+  .streets.map-mode #street-search {
+    top: 60px;
+    left: 12px;
+  }
+  #street-info {
+    padding: 8px;
+  }
+  #street-labels span {
+    font-size: 10px;
+  }
+}

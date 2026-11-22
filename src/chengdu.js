@@ -218,6 +218,13 @@ export async function createChengdu(renderer, scene, camera, state, notify) {
   }
   function hud() {
     const coord = geographic(current.x, current.z);
+    $('slow-entry').href =
+      '/?region=chengdu&lon=' +
+      coord[0].toFixed(6) +
+      '&lat=' +
+      coord[1].toFixed(6) +
+      '&hdg=' +
+      Math.round(current.heading);
     district = atlas.areas.slice(1).find((a) => contains(a, coord));
     const id = target();
     state.distance = distanceKm(coord, point(id));
@@ -375,6 +382,14 @@ export async function createChengdu(renderer, scene, camera, state, notify) {
   }
   const mapBackground = new T.Color(0x214542);
   reset();
+  const params = new URLSearchParams(location.search);
+  const co = [Number(params.get('lon')), Number(params.get('lat'))];
+  if (params.has('lon') && params.has('lat') && contains(atlas.areas[0], co)) {
+    [current.x, current.z] = project(co);
+    ground = terrain.meters(current.x, current.z);
+    current.altitude = ground + 630;
+    current.heading = Number(params.get('hdg')) || 0;
+  }
   return {
     render,
     reset,

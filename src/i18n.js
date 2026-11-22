@@ -1,5 +1,8 @@
 export const messages = {
   en: {
+    'street.region': 'Chengdu regional cruise',
+    'street.slow': 'Chengdu street flight',
+    'street.reached': 'Reached {name}',
     'cd.enter': 'Fly Chengdu ↗',
     'cd.region': 'Chengdu',
     'cd.routes': 'Flight routes',
@@ -127,6 +130,9 @@ export const messages = {
     'auth.return': 'You can return to the conversation. No token needs to be copied.',
   },
   zh: {
+    'street.region': '成都全域巡航',
+    'street.slow': '成都街区慢飞',
+    'street.reached': '已飞抵{name}',
     'cd.enter': '飞往成都 ↗',
     'cd.region': '成都全域',
     'cd.routes': '探索航线',

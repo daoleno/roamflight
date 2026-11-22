@@ -1,0 +1,20 @@
+Roamflight Chengdu street geography, release 1
+
+Street network, water, bridges, land-use outlines, places: © OpenStreetMap contributors. Geofabrik Sichuan 2026-11-01. Derivative street database distributed under Open Database License 1.0. The same machine-readable database that drives the game is freely downloadable: index.json supplies byte ranges in the neighbouring .pack files, described in docs/CHENGDU.md. places.gzdata is the searchable index. Original and rebuild instructions:
+https://download.geofabrik.de/asia/china/sichuan/sichuan-261101.osm.pbf
+https://github.com/daoleno/roamflight/blob/main/scripts/prepare-streets.py
+https://www.openstreetmap.org/copyright
+
+Overture Maps Foundation release 2026-11-18.0, Buildings (ODbL 1.0). Footprints combine OpenStreetMap and “A first high-quality vector data of buildings in East Asian countries based on a comprehensive large-scale mapping framework”, Qian Shi, Jiajun Zhu, Zhengyu Liu, Haonan Guo, Mengxi Liu, Zihong Liu and Xiaoping Liu, CC BY 4.0.
+https://doi.org/10.5281/zenodo.8174931
+https://docs.overturemaps.org/guides/buildings/
+Geometry reprojected in metres, quantized, partitioned and extruded. Rooflines, colours and facades are illustrative. Heights are rounded source attributes when available, otherwise floors × 3.2 m, then a CNBH footprint-interior estimate when supported, else an explicitly illustrative 8 m mass. The covered bridge uses a representative 12 m envelope. Its mapped deck outline is about 17 m across; the published 23 m width exceeds the mapped outline. The two-storey gallery above the deck is illustrative.
+
+Supplemental Places: Overture Maps Foundation, Meta, Microsoft, OpenTravel, Uberall and PinMeTo. CDLA Permissive 2.0 records only. Selected Chinese names with confidence >= 0.8 and no permanent closure recorded. Categories translated for display. coverage.json tabulates the municipal inventory. A source count for building providers covers the download rectangle before municipal clipping.
+https://docs.overturemaps.org/guides/places/
+Licence texts accompany this notice: ODbL-1.0.txt, CC-BY-4.0.txt and CDLA-Permissive-2.0.txt.
+
+Contains modified Copernicus Sentinel data (2026). Central 12 km × 12 km ground colour from Sentinel-2 L2A TCI S2B_48RVU_20260905_0_L2A, resampled north-up at 10 m, WebP compressed. Roads and water polygons overlay this texture. The street chart uses a vector-derived background. Terrain and city boundary use the regional atlas; see ../chengdu/NOTICE.txt.
+https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/48/R/VU/2026/9/S2B_48RVU_20260905_0_L2A/TCI.tif
+
+CNBH-10 m: A first Chinese building height at 10 m resolution. Wanben Wu, Fudan University. 2020 observation, April 2023 release. CC BY 4.0. Source and licence: https://doi.org/10.5281/zenodo.7923866 and https://creativecommons.org/licenses/by/4.0/. UTM 48N native raster tiles X103Y31 and X105Y31. Derived values are rounded medians from valid interior cells on eligible roofs. Only medians rounding to 20 m or above are applied, based on local cross-checks. Source reports nationwide RMSE 6.1 m; local agreement varies by height and date. See coverage.json and docs/CHENGDU.md.

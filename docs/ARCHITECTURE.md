@@ -76,3 +76,5 @@ Playwright, connected to Chromium through CDP, verifies full gameplay, package
 landing, camera/map controls, mobile touch, responsive layout, canvas pixels,
 console errors and local-only resource loading. The script generates evidence in
 `verification/`; this generated directory is not published.
+
+The default Chengdu entry dynamically loads street flight. A shared projected metre grid drives the low-flight controller, collision queries, camera labels and pannable chart. Street tiles are fetched as independent gzip byte ranges from static packs. Both the WebGL scene and chart consume the same decoded records. Each tile owns its GPU buffers, surfaces and labels, which are released when the flight or map moves away. Regional cruise remains separately addressable with `mode=region`.

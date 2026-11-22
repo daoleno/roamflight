@@ -167,8 +167,13 @@ async function start() {
       document.body.classList.add('chengdu');
       loadingKey = 'cd.loading';
       $('load-status').textContent = t(loadingKey);
-      const { createChengdu } = await import('./chengdu.js');
-      region = await createChengdu(renderer, scene, camera, state, notify);
+      if (params.get('mode') === 'region') {
+        const { createChengdu } = await import('./chengdu.js');
+        region = await createChengdu(renderer, scene, camera, state, notify);
+      } else {
+        const { createStreetFlight } = await import('./street-flight.js');
+        region = await createStreetFlight(renderer, scene, camera, state, notify, toggleMap);
+      }
       $('load-progress').value = 100;
     } else {
       world = await createWorld(renderer, scene, (value) => {
@@ -770,6 +775,10 @@ $('sound').onclick = () => toggleSound();
 $('fullscreen').onclick = fullscreen;
 $('drop').onclick = dropPackage;
 $('route-button').onclick = () => {
+  if (document.body.classList.contains('streets')) {
+    toggleMap();
+    return;
+  }
   setPaused(true);
   $('city-route').focus();
 };

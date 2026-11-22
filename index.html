@@ -27,6 +27,31 @@
         aria-label="Interactive Earth and aircraft"
         data-i18n-aria="app.canvas"
       ></canvas>
+      <div id="street-labels" aria-hidden="true"></div>
+      <section id="street-search" aria-label="街区地图">
+        <input
+          id="street-query"
+          type="search"
+          autocomplete="off"
+          placeholder="查街道、桥梁、地标…"
+          aria-label="查找成都地点"
+        />
+        <div id="street-results"></div>
+        <div id="street-info" hidden>
+          <strong id="street-name"></strong><small id="street-type"></small>
+          <p id="street-story"></p>
+          <a id="street-source" target="_blank" rel="noopener">资料来源 ↗</a>
+          <div>
+            <button id="street-nav">导航到这里</button
+            ><button id="street-depart">从这里起飞</button>
+          </div>
+        </div>
+      </section>
+      <div id="street-map-tools">
+        <button id="street-plus" aria-label="放大">＋</button
+        ><button id="street-minus" aria-label="缩小">−</button
+        ><button id="street-locate">机位</button>
+      </div>
       <canvas id="chart-ink" aria-hidden="true"></canvas>
       <header id="identity">
         <strong data-i18n="app.name">Roamflight</strong
@@ -194,6 +219,16 @@
         </button>
         <a class="city-entry menu-region" href="/?region=chengdu" data-i18n="cd.enter"
           >Fly Chengdu</a
+        >
+        <a
+          class="menu-region"
+          id="regional-entry"
+          href="/?region=chengdu&amp;mode=region"
+          data-i18n="street.region"
+          >Chengdu regional cruise</a
+        >
+        <a id="slow-entry" class="menu-region" href="/?region=chengdu" data-i18n="street.slow"
+          >Chengdu street flight</a
         >
         <a class="city-only menu-region" href="/" data-i18n="cd.world">World flight</a>
         <label class="city-only"
