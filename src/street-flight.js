@@ -71,7 +71,7 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   const sun = new T.DirectionalLight(0xffedcd, 2.55),
     ambient = new T.HemisphereLight(0xd9edff, 0x646456, 1.15);
   renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = T.BasicShadowMap;
+  renderer.shadowMap.type = T.PCFSoftShadowMap;
   sun.castShadow = true;
   sun.shadow.mapSize.set(1024, 1024);
   Object.assign(sun.shadow.camera, {
@@ -83,8 +83,9 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
     far: 1900,
   });
   sun.shadow.camera.updateProjectionMatrix();
-  sun.shadow.bias = -0.00018;
-  sun.shadow.normalBias = 0.48;
+  // The 1.9 km light-depth range needs a metre-scale bias on thin double-sided roofs.
+  sun.shadow.bias = -0.00092;
+  sun.shadow.normalBias = 0.08;
   sun.shadow.autoUpdate = false;
   let shadowGeneration = -1;
   scene.add(sun, sun.target, ambient);
