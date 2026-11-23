@@ -42,7 +42,7 @@ function inside(x, z, r) {
   }
   return hit;
 }
-function makeTile(i, j, size, records, ground, imagery) {
+function makeTile(i, j, size, records, ground, imagery, environment) {
   const ox = i * size,
     oz = j * size,
     group = new T.Group();
@@ -84,34 +84,234 @@ function makeTile(i, j, size, records, ground, imagery) {
   ink.fillStyle = '#e1e2d5';
   ink.fillRect(0, 0, size, size);
   paintLayers(ink);
-  if (imagery) {
-    ctx.globalAlpha = 0.7;
+  const { terrain, regionalImage, wave, time } = environment;
+  const image = regionalImage.image;
+  const sx = image.width / ((terrain.right - terrain.left) * 1000),
+    sz = image.height / ((terrain.bottom - terrain.top) * 1000);
+  ctx.drawImage(
+    image,
+    (ox - terrain.left * 1000) * sx,
+    (oz - terrain.top * 1000) * sz,
+    size * sx,
+    size * sz,
+    0,
+    0,
+    size,
+    size,
+  );
+  if (imagery)
     ctx.drawImage(imagery, ox / 10, (oz + 1200) / 10, size / 10, size / 10, 0, 0, size, size);
-    // The RGB image provides ground colour. Mapped road and water geometry stays legible over it.
-    ctx.globalAlpha = 0.83;
-  }
-  paintLayers(ctx);
+  // Retain the satellite variation underneath mapped surfaces and use separate chart ink.
+  const pavement = {
+    path: '#b6a993',
+    street: '#5e6467',
+    main: '#606368',
+    motor: '#53585d',
+    bridge: '#928b80',
+  };
+  for (const type of order)
+    for (const [kind, , width, rings] of records) {
+      if (type !== kind || kind === 'water' || kind === 'river') continue;
+      trace(ctx, rings, kind in land);
+      if (kind in land) {
+        ctx.globalAlpha = kind === 'deck' ? 0.88 : kind === 'plaza' ? 0.23 : 0.17;
+        ctx.fillStyle = kind === 'green' ? '#566e42' : land[kind];
+        ctx.fill('evenodd');
+      } else {
+        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = pavement[kind];
+        ctx.lineWidth = width;
+        ctx.stroke();
+        if ((kind === 'main' || kind === 'motor') && width >= 8) {
+          ctx.globalAlpha = 0.56;
+          ctx.lineWidth = 0.48;
+          ctx.strokeStyle = '#cec6a2';
+          ctx.stroke();
+        }
+      }
+    }
   ctx.globalAlpha = 1;
+  const landscape = environment.landscape[i + ',' + j] || [];
+  const trees = [];
+  function canopy(x, z) {
+    if (x >= 0 && x < size && z >= 0 && z < size) trees.push([x, z]);
+  }
+  for (const [kind, path] of landscape) {
+    if (kind === 'tree') {
+      canopy(...path);
+      continue;
+    }
+    if (kind === 'tree_row') {
+      let offset = 0;
+      for (let k = 2; k < path.length; k += 2) {
+        const dx = path[k] - path[k - 2],
+          dz = path[k + 1] - path[k - 1],
+          length = Math.hypot(dx, dz);
+        for (; offset < length; offset += 8)
+          canopy(path[k - 2] + (dx * offset) / length, path[k - 1] + (dz * offset) / length);
+        offset -= length;
+      }
+      continue;
+    }
+    trace(ctx, [path], false);
+    ctx.lineWidth = 1.4;
+    if (kind === 'hedge' || kind === 'track') {
+      ctx.strokeStyle = kind === 'hedge' ? '#476044' : '#aa7862';
+      ctx.stroke();
+      continue;
+    }
+    ctx.fillStyle = {
+      pitch: '#668565',
+      fountain: '#65999c',
+      swimming_pool: '#5d9cac',
+      grass: '#75905f',
+      flowerbed: '#827f57',
+    }[kind];
+    ctx.globalAlpha = 0.65;
+    ctx.fill();
+    if (kind === 'pitch' || kind === 'fountain') {
+      ctx.strokeStyle = '#d1d2b8';
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+  }
+  let foliage;
+  if (trees.length) {
+    foliage = new T.InstancedMesh(
+      new T.IcosahedronGeometry(1, 1),
+      new T.MeshLambertMaterial({ color: 0x69834d }),
+      trees.length,
+    );
+    const crown = new T.Object3D();
+    for (const [index, [x, z]] of trees.entries()) {
+      const radius = 2.6 + Math.abs((x + z) % 11) * 0.11;
+      crown.position.set(x, ground(ox + x, oz + z) + radius + 1.8, z);
+      crown.scale.set(radius, radius * 1.14, radius);
+      crown.rotation.y = x;
+      crown.updateMatrix();
+      foliage.setMatrixAt(index, crown.matrix);
+    }
+    foliage.castShadow = foliage.receiveShadow = true;
+    group.add(foliage);
+  }
+  let waterMap;
+  if (records.some(([k]) => k === 'water' || k === 'river')) {
+    // Green denotes mapped water, red its bank. Omit artificial clipping edges at tile borders.
+    const mask = document.createElement('canvas');
+    mask.width = mask.height = 512;
+    const m = mask.getContext('2d');
+    m.scale(512 / size, 512 / size);
+    m.fillStyle = 'black';
+    m.fillRect(0, 0, size, size);
+    for (const [kind, , width, rings] of records) {
+      if (kind !== 'water' && kind !== 'river') continue;
+      trace(m, rings, kind === 'water');
+      m.fillStyle = m.strokeStyle = '#00ff00';
+      if (kind === 'river') {
+        m.lineWidth = width;
+        m.stroke();
+        continue;
+      }
+      m.fill('evenodd');
+      m.save();
+      m.clip('evenodd');
+      m.beginPath();
+      for (const ring of rings)
+        for (let k = 0; k < ring.length; k += 2) {
+          const n = (k + 2) % ring.length;
+          if (
+            [0, size].some(
+              (edge) =>
+                (Math.abs(ring[k] - edge) < 1 && Math.abs(ring[n] - edge) < 1) ||
+                (Math.abs(ring[k + 1] - edge) < 1 && Math.abs(ring[n + 1] - edge) < 1),
+            )
+          )
+            continue;
+          m.moveTo(ring[k], ring[k + 1]);
+          m.lineTo(ring[n], ring[n + 1]);
+        }
+      for (const [w, color] of [
+        [16, '#40ff00'],
+        [8, '#80ff00'],
+        [3, '#c0ff00'],
+      ]) {
+        m.lineWidth = w;
+        m.strokeStyle = color;
+        m.stroke();
+      }
+      m.restore();
+    }
+    for (const [kind, , width, rings] of records)
+      if (kind === 'deck' || kind === 'bridge') {
+        trace(m, rings, kind === 'deck');
+        m.fillStyle = m.strokeStyle = 'black';
+        m.lineWidth = width;
+        if (kind === 'deck') m.fill('evenodd');
+        else m.stroke();
+      }
+    waterMap = new T.CanvasTexture(mask);
+  }
   const groundGeom = new T.PlaneGeometry(size, size, 8, 8);
   groundGeom.rotateX(-Math.PI / 2);
   groundGeom.translate(size / 2, 0, size / 2);
   const pos = groundGeom.attributes.position;
   for (let k = 0; k < pos.count; k++)
     pos.setY(k, ground(ox + pos.getX(k), oz + pos.getZ(k)) + 0.35);
+  groundGeom.computeVertexNormals();
   const texture = new T.CanvasTexture(canvas);
   texture.colorSpace = T.SRGBColorSpace;
   texture.anisotropy = 4;
   const floor = new T.Mesh(
     groundGeom,
-    new T.MeshBasicMaterial({ map: texture, polygonOffset: true, polygonOffsetFactor: -2 }),
+    new T.MeshLambertMaterial({ map: texture, polygonOffset: true, polygonOffsetFactor: -2 }),
   );
+  floor.receiveShadow = true;
+  if (waterMap)
+    floor.material.onBeforeCompile = (shader) => {
+      Object.assign(shader.uniforms, {
+        riverMask: { value: waterMap },
+        waves: { value: wave },
+        flightTime: time,
+      });
+      shader.vertexShader =
+        'varying vec3 groundWorld;\n' +
+        shader.vertexShader.replace(
+          '#include <begin_vertex>',
+          '#include <begin_vertex>\ngroundWorld=(modelMatrix*vec4(position,1.)).xyz;',
+        );
+      shader.fragmentShader =
+        'varying vec3 groundWorld;uniform sampler2D riverMask,waves;uniform float flightTime;\n' +
+        shader.fragmentShader.replace(
+          '#include <map_fragment>',
+          `#include <map_fragment>
+      vec2 bank=texture2D(riverMask,vMapUv).rg;
+      if(bank.g>.01){
+        vec2 uv=groundWorld.xz;
+        vec2 ripple=(texture2D(waves,uv/38.+flightTime*.006).rg+texture2D(waves,uv/21.-flightTime*.004).rg-1.);
+        vec3 viewDir=normalize(cameraPosition-groundWorld);
+        float fresnel=pow(1.-clamp(viewDir.y,0.,1.),3.);
+        vec3 normal=normalize(vec3(ripple.x*.12,1.,ripple.y*.12));
+        float glint=pow(max(dot(normal,normalize(viewDir+normalize(vec3(-.84,.88,.38)))),0.),60.);
+        vec3 river=mix(vec3(.026,.122,.133),vec3(.081,.208,.185),bank.r);
+        river=mix(river,vec3(.19,.34,.48),fresnel*.52)+ripple.x*.016+vec3(.63,.59,.46)*glint;
+        diffuseColor.rgb=mix(diffuseColor.rgb,river,bank.g);
+      }`,
+        );
+    };
   group.add(floor);
   const coords = [],
     colors = [],
+    facade = [],
     hulls = [],
     labels = [];
-  function tri(p, q, r, c) {
+  let faceHeight = 0,
+    baseY = 0,
+    style = 0,
+    bay = 4;
+  function tri(p, q, r, c, uvs) {
     coords.push(...p, ...q, ...r);
+    for (const [index, vertex] of [p, q, r].entries())
+      facade.push(uvs ? uvs[index] / bay : 0, vertex[1] - baseY, uvs ? faceHeight : 0, style);
     for (let i = 0; i < 3; i++) colors.push(c.r, c.g, c.b);
   }
   const roof = new T.Color(),
@@ -156,8 +356,25 @@ function makeTile(i, j, size, records, ground, imagery) {
       top: base + h,
     });
     const museum = ox + xmin < 5844 && ox + xmax > 5844 && oz + zmin < 4485 && oz + zmax > 4485;
-    roof.setHex(bridge ? 0x805741 : museum ? 0xb59865 : h > 55 ? 0xa9b8b8 : 0xc2baab);
-    wall.setHex(bridge ? 0xb08b67 : museum ? 0xb49a71 : h > 55 ? 0x98aeb1 : 0xd9d1bf);
+    const seed = Math.abs(
+      Math.imul(Math.round(ox + xmin), 31) ^ Math.imul(Math.round(oz + zmin), 97),
+    );
+    style = bridge || museum ? 0 : h <= 12 ? 1 : h < 48 ? 2 : 3 + (seed % 2);
+    bay = style === 1 ? 3.6 : style === 2 ? 4.2 : 2.9 + (seed % 4) * 0.32;
+    faceHeight = h;
+    baseY = base;
+    roof.setHex(
+      bridge ? 0x674b3d : museum ? 0x998568 : [0xa5a6a0, 0x949c9c, 0xb5b1a5, 0xaca49a][seed % 4],
+    );
+    wall.setHex(
+      bridge
+        ? 0xaa7953
+        : museum
+          ? 0xae9065
+          : style >= 3
+            ? [0x9eafb1, 0x97a6a8, 0xb3b7af][seed % 3]
+            : [0xc9bfb0, 0xb9b8ad, 0xc9cbbe, 0xb9afa4][seed % 4],
+    );
     // The mapped Anshun deck supports a two-storey covered gallery. Dimensions above the deck are illustrative.
     const deckTop = bridge ? 3.5 : h;
     if (bridge) {
@@ -172,11 +389,21 @@ function makeTile(i, j, size, records, ground, imagery) {
         tri(a, c, d, color);
       };
       for (const side of [-1, 1]) {
+        // Open gallery bays sit inside the existing documented illustrative envelope.
+        for (let along = -36; along <= 36; along += 6) {
+          quad(
+            at(along - 0.42, side * 6.5, 3.5),
+            at(along + 0.42, side * 6.5, 3.5),
+            at(along + 0.42, side * 6.5, 9.5),
+            at(along - 0.42, side * 6.5, 9.5),
+            wall,
+          );
+        }
         quad(
           at(-37, side * 6.5, 3.5),
           at(37, side * 6.5, 3.5),
-          at(37, side * 6.5, 9.5),
-          at(-37, side * 6.5, 9.5),
+          at(37, side * 6.5, 4.5),
+          at(-37, side * 6.5, 4.5),
           wall,
         );
         for (const [eave, ridge, width] of [
@@ -211,9 +438,22 @@ function makeTile(i, j, size, records, ground, imagery) {
           q = [b.x, base, b.y],
           r = [b.x, base + deckTop, b.y],
           s = [a.x, base + deckTop, a.y];
-        tri(p, q, r, wall);
-        tri(p, r, s, wall);
+        const length = a.distanceTo(b);
+        tri(p, q, r, wall, [0, length, length]);
+        tri(p, r, s, wall, [0, length, 0]);
       }
+    if (!bridge) {
+      trace(ctx, rings, true);
+      ctx.save();
+      ctx.clip('evenodd');
+      ctx.strokeStyle = 'rgba(64,61,55,.75)';
+      ctx.lineWidth = 3.3;
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(226,223,208,.95)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.restore();
+    }
     // Also draw roofprints on the flat navigation chart.
   }
   const geo = new T.BufferGeometry();
@@ -221,25 +461,46 @@ function makeTile(i, j, size, records, ground, imagery) {
   geo.setAttribute('color', new T.Float32BufferAttribute(colors, 3));
   geo.computeVertexNormals();
   const material = new T.MeshLambertMaterial({ vertexColors: true, side: T.DoubleSide });
+  geo.setAttribute('facade', new T.Float32BufferAttribute(facade, 4));
   material.onBeforeCompile = (shader) => {
+    shader.uniforms.groundColour = { value: texture };
+    shader.uniforms.tileSize = { value: size };
     shader.vertexShader =
-      'varying vec3 streetPosition;varying float streetWall;\n' +
+      'attribute vec4 facade; varying vec4 vFacade; varying vec2 roofUv; uniform float tileSize;\n' +
       shader.vertexShader.replace(
         '#include <begin_vertex>',
-        '#include <begin_vertex>\nstreetPosition=position;streetWall=1.-abs(normal.y);',
+        '#include <begin_vertex>\nvFacade=facade;roofUv=vec2(position.x/tileSize,1.-position.z/tileSize);',
       );
     shader.fragmentShader =
-      'varying vec3 streetPosition;varying float streetWall;\n' +
+      'varying vec4 vFacade; varying vec2 roofUv; uniform sampler2D groundColour;\n' +
       shader.fragmentShader.replace(
         '#include <color_fragment>',
         `#include <color_fragment>
-  vec2 panel=vec2((streetPosition.x+streetPosition.z)*.28,streetPosition.y*.30);
-  float fade=1.-smoothstep(.15,.65,max(fwidth(panel.x),fwidth(panel.y)));
-  float glass=smoothstep(.14,.26,fract(panel.x))*(1.-smoothstep(.78,.92,fract(panel.x)))*smoothstep(.25,.38,fract(panel.y))*(1.-smoothstep(.74,.89,fract(panel.y)));
-  diffuseColor.rgb*=mix(vec3(1.),vec3(.66,.77,.79),glass*fade*streetWall);`,
+      if(vFacade.z==0. && vFacade.w>0.){
+        vec3 image=texture2D(groundColour,roofUv).rgb;
+        diffuseColor.rgb=diffuseColor.rgb*.64+image*.43;
+      }else if(vFacade.z>0.){
+        float y=vFacade.y,h=vFacade.z,style=vFacade.w;
+        vec2 cell=vec2(vFacade.x,y/(style>2.5?3.8:3.2));
+        vec2 d=max(fwidth(cell),vec2(.012));
+        vec2 f=fract(cell);float fade=1.-smoothstep(.14,.66,max(d.x,d.y));
+        float span=style>2.5?.45:(style>1.5?.35:.26);
+        float pane=(1.-smoothstep(span-d.x,span+d.x,abs(f.x-.5)))*
+          (1.-smoothstep(.31-d.y,.31+d.y,abs(f.y-.54)));
+        if(style==4.)pane=1.-smoothstep(.39-d.y,.39+d.y,abs(f.y-.55));
+        float glass=mix(span*.99,pane,fade)*step(.5,style)*smoothstep(.5,2.8,y)*(1.-smoothstep(h-1.3,h-.45,y));
+        vec3 reflection=mix(vec3(.22,.31,.36),vec3(.52,.68,.75),smoothstep(0.,h,y));
+        float vertical=1.-smoothstep(.06,.12,abs(fract(cell.x*.20)-.5));
+        if(style>2.5)glass*=1.-.62*vertical*fade;
+        diffuseColor.rgb*=mix(vec3(1.),reflection,glass);
+        diffuseColor.rgb*=mix(.68,1.,smoothstep(0.,min(12.,h*.45),y));
+        diffuseColor.rgb*=1.-.12*(1.-smoothstep(.1,.52,abs(h-y-.8)))*fade;
+      }`,
       );
   };
-  group.add(new T.Mesh(geo, material));
+  const buildings = new T.Mesh(geo, material);
+  buildings.castShadow = buildings.receiveShadow = true;
+  group.add(buildings);
   for (const h of hulls) {
     trace(ink, h.rings, true);
     ink.fillStyle = '#a89d8b';
@@ -247,6 +508,20 @@ function makeTile(i, j, size, records, ground, imagery) {
     ink.lineWidth = 1.2;
     ink.strokeStyle = '#918a7c';
     ink.stroke();
+  }
+  const bucketSize = 100;
+  const footprints = new Map();
+  for (const h of hulls) {
+    for (let col = Math.floor(h.xmin / bucketSize); col <= Math.floor(h.xmax / bucketSize); col++)
+      for (
+        let row = Math.floor(h.zmin / bucketSize);
+        row <= Math.floor(h.zmax / bucketSize);
+        row++
+      ) {
+        const key = col + ',' + row;
+        if (!footprints.has(key)) footprints.set(key, []);
+        footprints.get(key).push(h);
+      }
   }
   return {
     group,
@@ -260,7 +535,9 @@ function makeTile(i, j, size, records, ground, imagery) {
       let result;
       const u = x - ox,
         v = z - oz;
-      for (const h of hulls) {
+      const bucket = footprints.get(Math.floor(u / bucketSize) + ',' + Math.floor(v / bucketSize));
+      if (!bucket) return;
+      for (const h of bucket) {
         if (u < h.xmin - 5 || u > h.xmax + 5 || v < h.zmin - 5 || v > h.zmax + 5) continue;
         if (inside(u, v, h.rings[0]) && !h.rings.slice(1).some((r) => inside(u, v, r)))
           if (!result || h.top > result.top) result = h;
@@ -269,6 +546,12 @@ function makeTile(i, j, size, records, ground, imagery) {
     },
     dispose() {
       group.removeFromParent();
+      if (foliage) {
+        foliage.geometry.dispose();
+        foliage.material.dispose();
+        foliage.dispose();
+      }
+      waterMap?.dispose();
       texture.dispose();
       groundGeom.dispose();
       floor.material.dispose();
@@ -278,7 +561,7 @@ function makeTile(i, j, size, records, ground, imagery) {
     },
   };
 }
-export function streetTiles(scene, index, ground) {
+export function streetTiles(scene, index, ground, environment) {
   const size = index.size,
     tiles = new Map(),
     pending = new Map(),
@@ -323,7 +606,7 @@ export function streetTiles(scene, index, ground) {
       if (!wanted.has(key)) return;
       const img = await groundImage(i, j);
       if (!wanted.has(key)) return;
-      const tile = makeTile(i, j, size, records, ground, img);
+      const tile = makeTile(i, j, size, records, ground, img, environment);
       tiles.set(key, tile);
       scene.add(tile.group);
       failures.delete(key);

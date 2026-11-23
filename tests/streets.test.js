@@ -78,3 +78,32 @@ test('the historical pavilion lies in Jinjiang and the covered bridge connects b
     ].sort(),
   );
 });
+
+test('regional skyline triangles keep the local metre outline and height of the museum', () => {
+  const [, , x, z] = guide.find((p) => p[0] === '成都博物馆');
+  const [kind, , [height], [ring]] = records(x, z).find(
+    ([kind, , attr, rings]) =>
+      kind === 'b' &&
+      attr[0] === 47 &&
+      Math.min(...rings[0].filter((_, i) => i % 2 === 0)) <= x % 1200 &&
+      Math.max(...rings[0].filter((_, i) => i % 2 === 0)) >= x % 1200 &&
+      Math.min(...rings[0].filter((_, i) => i % 2 === 1)) <= z % 1200 &&
+      Math.max(...rings[0].filter((_, i) => i % 2 === 1)) >= z % 1200,
+  );
+  assert.equal(kind, 'b');
+  const bytes = gunzipSync(file('skyline.gzdata'));
+  const roof = new Set();
+  for (let offset = 0; offset < bytes.length;) {
+    const i = bytes.readInt32LE(offset),
+      j = bytes.readInt32LE(offset + 4),
+      length = bytes.readInt32LE(offset + 8);
+    offset += 12;
+    assert.ok(length > 0 && length % 9 === 0 && offset + length * 2 <= bytes.length);
+    if (i === Math.floor(x / 1200) && j === Math.floor(z / 1200))
+      for (let k = offset; k < offset + length * 2; k += 6)
+        if (bytes.readInt16LE(k + 2) === height)
+          roof.add([bytes.readInt16LE(k), bytes.readInt16LE(k + 4)].join(','));
+    offset += length * 2;
+  }
+  for (let i = 0; i < ring.length; i += 2) assert.ok(roof.has([ring[i], ring[i + 1]].join(',')));
+});

@@ -11,6 +11,8 @@ HUD 或暂停菜单的「飞往成都」与 `/?region=chengdu` 从天府广场�
 ```sh
 uv run --script scripts/prepare-streets.py "$TMPDIR/chengdu-streets"
 uv run --script scripts/prepare-street-imagery.py
+uv run --script scripts/prepare-street-landscape.py "$TMPDIR/chengdu-streets/sichuan-261101.osm.pbf"
+node scripts/prepare-skyline.mjs
 ```
 
 `index.json` 包含逻辑瓦片边长、区县名称和 `i,j → [字节偏移, 长度]`。每块 1200 m，`floor(i/8)_floor(j/8).pack` 内每个范围是一段独立 gzip JSON。建筑记录为种类、名称、[米高, 高度来源]、各环交替的局部 x/z；高度来源 0 表示缺资料示意，1 表示来源高度，2 表示层数估高，3 表示 CNBH-10m 2020 遥感估高。街区索引和数据可直接下载，查找地点时才读取 `places.gzdata`。驾驶时保留周边九块，放大或缩小航图时按范围加载并释放旧图块。数据版本、许可、各区计数及高度覆盖见游戏署名页。
@@ -25,7 +27,8 @@ The globe's steering, throttle, boost, pitch, camera, sound, day/night and touch
 
 - The atlas covers 102.90–104.96° E, 29.98–31.48° N. This buffered rectangle contains all of OSM Chengdu relation 2110264 and its twenty level-six subareas. The HUD distinguishes the neighbouring area outside the city. At the edge of the buffered chart the aircraft turns back towards Chengdu.
 - The Copernicus GLO-90 surface model uses WGS84 horizontal coordinates and EGM2008 metre heights. Nine one-degree tiles are area-averaged to 241 × 193 vertex samples (roughly 820 × 870 metres). Terrain triangles and ground-clearance interpolation share those samples and diagonal. The renderer exaggerates relief 2.2×. Mountain summits and narrow valleys are smoothed.
-- The 3072 × 2592 surface uses ESA WorldCover 2021 v200 classes, sampled from two 10 m source tiles (roughly 64 m per displayed texel). A separate 768 × 648 fractional built-up mask guides clustered buildings. Buildings, the bridge and tower are artistic. Both airports use OSM terminal footprints and runway axes with illustrative heights, widths and markings. The scene uses no photogrammetry or parcel footprints.
+- The chart uses the 3072 × 2592 WorldCover class map with OSM overlays. Flight uses nine 2021 ESA WorldCover Sentinel-2 median RGB tiles resampled to 4096 × 3456 (about 48 m per texel), with the central 12 × 12 km September 2026 scene blended in at 10 m. The street tiles use the same regional backdrop beyond the central image. The skyline contains the 4,107 street footprints whose recorded or estimated height reaches 30 m. The two airports use OSM terminal footprints and runway axes. Roof finishes, facades, the covered gallery, the TV tower and tree crowns are illustrative.
+- Central street landscape details use mapped OSM tree nodes, tree rows, fountains, sports areas and planted areas. Spacing along a mapped row and crown dimensions are illustrative. River shading combines the original wave texture, distance to a mapped bank and viewing angle. No bathymetric observations are available. Directional shadows follow the building geometry.
 - The 2026-01-01 Geofabrik Sichuan OSM snapshot supplies city and county polygons, river and canal axes, arterial roads, expressways, runway and airport features. Widths are exaggerated for legibility. Regional names and waypoint coordinates are in `src/chengdu-geo.js`. West, east, north, south and lake routes can be flown freely in either direction.
 - All layers use WGS84 longitude/latitude. The local plane uses kilometres east and south about 104° E, 30.7° N, with longitude scale fixed at 30.7° N. Geographic distance readouts use spherical great-circle distance. No GCJ-02 or BD-09 offset is applied. The world globe keeps its original Unity-axis reflection.
 
@@ -35,9 +38,10 @@ Run from the repository root with a scratch directory large enough for the pinne
 
 ```sh
 uv run --script scripts/prepare-chengdu.py "$TMPDIR/chengdu-data"
+uv run --script scripts/prepare-flight-surface.py
 ```
 
-The script checks the SHA-256 of each input against `public/assets/chengdu/sources.json`. It writes the packaged assets to the same directory as the manifest. The game only fetches these static derivatives in regional mode. Input sources, modification notices and licences are linked from the in-game credits. The map and flight use the same mesh and surface. Scene diagnosis is available read-only through `window.__flight.state`.
+The script checks the SHA-256 of each input against `public/assets/chengdu/sources.json`. It writes the packaged assets to the same directory as the manifest. The world entry loads its own globe assets. Input sources, modification notices and licences are linked from the in-game credits. The map and flight use the same elevation mesh. Scene diagnosis is available read-only through `window.__flight.state`.
 
 ### 遥感估高的适用范围
 

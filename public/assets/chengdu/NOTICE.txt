@@ -15,6 +15,11 @@ The regional height field is averaged, quantized to metres, and vertically exagg
 ESA WorldCover 2021 v200 (Zanaga et al., 2022). CC BY 4.0.
 https://doi.org/10.5281/zenodo.7254221
 https://creativecommons.org/licenses/by/4.0/
-surface.webp reclassifies and recolours cover samples. urban.png aggregates the built-up class. Individual buildings are illustrative.
+surface.webp reclassifies and recolours cover samples. urban.png aggregates the built-up class. The original built-up mask is retained with the chart assets.
 
 Source byte checksums and exact input URLs are in sources.json. Runtime requires no remote tiles, credentials or tracking.
+
+Regional flight ground colour: © ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium. ESA WorldCover Sentinel-2 RGBNIR yearly median, CC BY 4.0. Nine source tiles N29–31 E102–104, B04/B03/B02, resampled and display-stretched in scripts/prepare-flight-surface.py. Accessed 2026-11-23.
+https://registry.opendata.aws/esa-worldcover-vito-composites/
+https://creativecommons.org/licenses/by/4.0/
+The city-centre imagery and regional skyline are derived from the street sources. See ../streets-v1/NOTICE.txt.

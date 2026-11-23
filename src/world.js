@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MeshBVH, acceleratedRaycast } from 'three-mesh-bvh';
 import { RADIUS, toPoint } from './geo.js';
+import { cloudMesh } from './flight-sky.js';
 import { loadAircraft } from './aircraft-model.js';
 
 const asset = (name) => `/assets/${name}`;
@@ -326,34 +327,7 @@ function createClouds(scene, groundRadius, uniforms) {
   const count = 350,
     puffs = 5;
   const group = new THREE.Group();
-  const material = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: `varying vec3 vWorld,vNormal;
-      void main(){
-        vec4 world=modelMatrix*instanceMatrix*vec4(position,1.);vWorld=world.xyz;
-        vec3 n=normal/vec3(dot(instanceMatrix[0].xyz,instanceMatrix[0].xyz),dot(instanceMatrix[1].xyz,instanceMatrix[1].xyz),dot(instanceMatrix[2].xyz,instanceMatrix[2].xyz));
-        vNormal=normalize(mat3(modelMatrix)*mat3(instanceMatrix)*n);
-        gl_Position=projectionMatrix*viewMatrix*world;
-      }`,
-    fragmentShader: `uniform vec3 sun;uniform float night;varying vec3 vWorld,vNormal;
-      void main(){
-        vec3 n=normalize(vNormal),view=normalize(cameraPosition-vWorld);
-        float diffuse=clamp((dot(n,sun)+.65)/1.65,0.,1.);
-        float silver=pow(1.-abs(dot(n,view)),3.)*pow(max(0.,dot(view,-sun)),3.);
-        vec3 shade=mix(vec3(.44,.55,.66),vec3(1.,.98,.91),diffuse)+silver*.15;
-        float haze=1.-exp(-distance(cameraPosition,vWorld)*.004);
-        shade=mix(shade,vec3(.27,.46,.68),haze*.5);
-        shade=mix(shade,shade*vec3(.085,.12,.19),night);
-        gl_FragColor=vec4(shade,1.);
-        #include <tonemapping_fragment>
-        #include <colorspace_fragment>
-      }`,
-  });
-  const mesh = new THREE.InstancedMesh(
-    new THREE.SphereGeometry(1, 16, 12),
-    material,
-    count * puffs,
-  );
+  const mesh = cloudMesh(count * puffs, uniforms, 0.004);
   const shadowMaterial = new THREE.ShaderMaterial({
     transparent: true,
     depthWrite: false,

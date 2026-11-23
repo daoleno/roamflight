@@ -653,11 +653,41 @@ function flightInput() {
     boost: keys.has('ShiftLeft') || keys.has('ShiftRight'),
   };
 }
+// Keep the instruments at CSS resolution. Adjust only the 3D buffer after sustained slow frames.
+let sampleStart = 0,
+  sampleFrames = 0;
+function adjustRegionalResolution(now) {
+  if (state.paused || state.map) {
+    sampleStart = 0;
+    sampleFrames = 0;
+    return;
+  }
+  if (!sampleStart) {
+    sampleStart = now;
+    return;
+  }
+  sampleFrames++;
+  const duration = now - sampleStart;
+  if (duration < 1800) return;
+  const mean = duration / sampleFrames;
+  const ratio = renderer.getPixelRatio(),
+    ceiling = Math.min(devicePixelRatio, 1.5);
+  const next =
+    mean > 41
+      ? Math.max(Math.min(0.75, ceiling), ratio - 0.25)
+      : mean < 18
+        ? Math.min(ceiling, ratio + 0.125)
+        : ratio;
+  if (next !== ratio) renderer.setPixelRatio(next);
+  sampleStart = now;
+  sampleFrames = 0;
+}
 function frame(now) {
   const dt = Math.min(0.1, Math.max(0.001, (now - last) / 1000));
   last = now;
   const input = flightInput();
   if (region) {
+    adjustRegionalResolution(now);
     region.render(dt, input);
     audio.update({
       speed: state.speed,

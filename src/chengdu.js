@@ -14,14 +14,10 @@ import {
   places,
   routes,
 } from './chengdu-geo.js';
-import {
-  terrainMesh,
-  buildings,
-  landmarks,
-  boundaries,
-  cloudField,
-  relief,
-} from './chengdu-scenery.js';
+import { terrainMesh, landmarks, boundaries, relief } from './chengdu-scenery.js';
+
+import { localSky } from './flight-sky.js';
+import { loadSkyline } from './chengdu-skyline.js';
 
 const $ = (id) => document.getElementById(id);
 const directory = '/assets/chengdu/';
@@ -34,41 +30,55 @@ async function resource(file) {
 }
 export async function createChengdu(renderer, scene, camera, state, notify) {
   const loader = new T.TextureLoader();
-  const [atlas, buffer, surface, urban, model] = await Promise.all([
+  const [atlas, buffer, surface, flightSurface, centre, model] = await Promise.all([
     resource('atlas.json').then((r) => r.json()),
     resource('height.bin').then((r) => r.arrayBuffer()),
     loader.loadAsync(directory + 'surface.webp'),
-    new T.ImageLoader().loadAsync(directory + 'urban.png'),
+    loader.loadAsync(directory + 'flight-rgb.webp'),
+    loader.loadAsync('/assets/streets-v1/chengdu-rgb.webp'),
     loadAircraft(scene),
   ]);
   const heights = new Int16Array(buffer),
     terrain = makeTerrain(atlas, heights);
   const { aircraft, propeller, controls } = model;
-  const blocks = buildings(terrain, urban, atlas.runways),
-    borders = boundaries(atlas, terrain),
-    clouds = cloudField(terrain);
-  scene.add(terrainMesh(atlas, terrain, heights, surface), blocks, borders, clouds);
+  const groundAt = (x, z) => terrain.meters(x / 1000, z / 1000);
+  const skyline = await loadSkyline(groundAt, 0.001, relief);
+  const borders = boundaries(atlas, terrain);
+  const land = terrainMesh(atlas, terrain, heights, flightSurface);
+  centre.colorSpace = T.SRGBColorSpace;
+  centre.anisotropy = 4;
+  const showCentre = { value: 1 };
+  land.material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, { centre: { value: centre }, showCentre });
+    shader.vertexShader =
+      'varying vec2 cityUv;\n' +
+      shader.vertexShader.replace(
+        '#include <begin_vertex>',
+        '#include <begin_vertex>\ncityUv=vec2(position.x,10.8-position.z)/12.;',
+      );
+    shader.fragmentShader =
+      'varying vec2 cityUv;uniform sampler2D centre;uniform float showCentre;\n' +
+      shader.fragmentShader.replace(
+        '#include <map_fragment>',
+        `#include <map_fragment>
+      vec2 edge=min(cityUv,1.-cityUv);
+      float blend=smoothstep(0.,.065,min(edge.x,edge.y))*showCentre;
+      if(blend>0.) diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(centre,cityUv).rgb,blend);
+      diffuseColor.rgb+=showCentre*vec3(.007,.009,.011);`,
+      );
+  };
+  surface.colorSpace = T.SRGBColorSpace;
+  surface.anisotropy = 4;
+  scene.add(land, skyline.group, borders);
   landmarks(scene, terrain, atlas);
   aircraft.scale.setScalar(0.084);
-  const sun = new T.DirectionalLight(0xffe4b8, 1.85),
-    ambient = new T.HemisphereLight(0xe6f5ff, 0xaba58b, 1.65);
-  sun.position.set(-65, 50, -30);
+  const sky = localSky(scene, false);
+  const sun = new T.DirectionalLight(0xffedcd, 2.5),
+    ambient = new T.HemisphereLight(0xd9edff, 0x646456, 1.15);
+  sun.position.copy(sky.sunDirection);
   scene.add(sun, ambient);
-  const fog = new T.FogExp2(0xbbd7d5, 0.031);
-  const sky = new T.Mesh(
-    new T.SphereGeometry(175, 32, 16),
-    new T.ShaderMaterial({
-      side: T.BackSide,
-      depthWrite: false,
-      uniforms: { night: { value: 0 } },
-      vertexShader:
-        'varying vec3 dir;void main(){dir=position;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
-      fragmentShader: `varying vec3 dir;uniform float night;void main(){float h=clamp(normalize(dir).y*2.1,0.,1.);vec3 daylight=mix(vec3(.50,.69,.70),vec3(.10,.37,.61),sqrt(h));gl_FragColor=vec4(mix(daylight,vec3(.012,.025,.058),night),1.);
-    #include <colorspace_fragment>
-    }`,
-    }),
-  );
-  scene.add(sky);
+  const fog = new T.FogExp2(0xb6d6ed, 0.016);
+  const cloudGround = (x, z) => terrain.meters(x, z) * relief;
   const mapCamera = new T.OrthographicCamera(-1, 1, 1, -1, 0.01, 400);
   mapCamera.up.set(0, 0, -1);
   const chart = $('chart-ink'),
@@ -319,18 +329,19 @@ export async function createChengdu(renderer, scene, camera, state, notify) {
     aircraft.rotation.set(-state.pitch, Math.PI - angle, state.bank, 'YXZ');
     updateControlSurfaces(controls, state.bank / 0.48, state.night ? 1 : 0, inFlight ? dt : 0);
     aircraft.visible = !state.map;
-    blocks.visible = !state.map;
-    sky.visible = !state.map;
-    clouds.visible = $('cloud-toggle').checked && !state.map;
+    skyline.group.visible = !state.map;
+    showCentre.value = state.map ? 0 : 1;
+    land.material.map = state.map ? surface : flightSurface;
     borders.visible = state.map && $('border-toggle').checked;
     scene.fog = state.map ? null : fog;
     scene.background = state.map ? mapBackground : null;
     const dark = state.night && !state.map;
-    sky.material.uniforms.night.value = dark ? 1 : 0;
-    sun.intensity = dark ? 0.35 : 1.85;
-    ambient.intensity = dark ? 0.42 : 1.65;
-    fog.color.setHex(dark ? 0x27384d : 0xbbd7d5);
+
+    sun.intensity = dark ? 0.35 : 2.5;
+    ambient.intensity = dark ? 0.42 : 1.15;
+    fog.color.setHex(dark ? 0x27384d : 0xb6d6ed);
     if (state.map) {
+      sky.update(camera, cloudGround, false, true, false);
       map();
       renderer.render(scene, mapCamera);
       previousView = -1;
@@ -358,7 +369,8 @@ export async function createChengdu(renderer, scene, camera, state, notify) {
     if (view === 2) camera.up.copy(forward);
     camera.lookAt(cameraLook);
     camera.updateMatrixWorld();
-    sky.position.copy(camera.position);
+    sky.update(camera, cloudGround, dark, false, $('cloud-toggle').checked);
+    skyline.update(current.x * 1000, current.z * 1000, 16000);
     previousView = view;
     const [tx, tz] = project(point(target()));
     projected.set(tx, terrain.meters(tx, tz) * relief + 0.4, tz).project(camera);

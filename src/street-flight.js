@@ -3,7 +3,9 @@ import { loadAircraft } from './aircraft-model.js';
 import { rotatePropeller } from './aircraft.js';
 import { updateControlSurfaces } from './control-surfaces.js';
 import { project, geographic, origin, contains, makeTerrain } from './chengdu-geo.js';
-import { streetTiles, streetRoot } from './street-tiles.js';
+import { streetTiles, streetRoot, decodeGzip } from './street-tiles.js';
+import { localSky } from './flight-sky.js';
+import { loadSkyline } from './chengdu-skyline.js';
 import { streetChart } from './street-chart.js';
 import { guide, tour, distanceLabel } from './street-guide.js';
 const $ = (id) => document.getElementById(id);
@@ -22,13 +24,17 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   const credit = document.querySelector('.city-credit');
   credit.href = '/credits.html#streets';
   credit.textContent = '© OpenStreetMap · Overture · Copernicus';
-  const [index, atlas, buffer, model, districts] = await Promise.all([
-    read(streetRoot + 'index.json?districts=2'),
-    read('/assets/chengdu/atlas.json'),
-    read('/assets/chengdu/height.bin', false),
-    loadAircraft(scene),
-    read(streetRoot + 'districts.json'),
-  ]);
+  const [index, atlas, buffer, model, districts, regionalImage, wave, landscape] =
+    await Promise.all([
+      read(streetRoot + 'index.json?districts=2'),
+      read('/assets/chengdu/atlas.json'),
+      read('/assets/chengdu/height.bin', false),
+      loadAircraft(scene),
+      read(streetRoot + 'districts.json'),
+      new T.TextureLoader().loadAsync('/assets/chengdu/flight-rgb.webp'),
+      new T.TextureLoader().loadAsync('/assets/wave.png'),
+      read(streetRoot + 'landscape.gzdata', false).then(decodeGzip),
+    ]);
   const heights = new Int16Array(buffer),
     terrain = makeTerrain(atlas, heights),
     ground = (x, z) => terrain.meters(x / 1000, z / 1000);
@@ -37,7 +43,19 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   aircraft.updateMatrixWorld(true);
   const box = new T.Box3().setFromObject(aircraft);
   aircraft.scale.setScalar(10.8 / (box.max.x - box.min.x));
-  const tiles = streetTiles(scene, index, ground);
+  regionalImage.colorSpace = T.SRGBColorSpace;
+  regionalImage.anisotropy = 4;
+  wave.wrapS = wave.wrapT = T.RepeatWrapping;
+  const time = { value: 0 };
+  const tiles = streetTiles(scene, index, ground, {
+    terrain,
+    regionalImage,
+    wave,
+    time,
+    landscape,
+  });
+  const skyline = await loadSkyline(ground, 1, 1);
+  scene.add(skyline.group);
   const floor = new T.PlaneGeometry(
     (terrain.right - terrain.left) * 1000,
     (terrain.bottom - terrain.top) * 1000,
@@ -48,14 +66,29 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   floor.translate((terrain.left + terrain.right) * 500, 0, (terrain.top + terrain.bottom) * 500);
   for (let i = 0; i < heights.length; i++) floor.attributes.position.setY(i, heights[i] - 2);
   floor.computeVertexNormals();
-  scene.add(new T.Mesh(floor, new T.MeshLambertMaterial({ color: 0xa4b397 })));
-  const sun = new T.DirectionalLight(0xffedcd, 2),
-    ambient = new T.HemisphereLight(0xe9f5ff, 0xa2a18f, 1.6);
-  sun.position.set(-8, 9, -4);
-  scene.add(sun, ambient);
-  const sky = new T.Color(0xb8d3d7);
-  scene.background = sky;
-  scene.fog = new T.FogExp2(sky, 0.00072);
+  scene.add(new T.Mesh(floor, new T.MeshLambertMaterial({ map: regionalImage })));
+  const sky = localSky(scene, true);
+  const sun = new T.DirectionalLight(0xffedcd, 2.55),
+    ambient = new T.HemisphereLight(0xd9edff, 0x646456, 1.15);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.BasicShadowMap;
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(1024, 1024);
+  Object.assign(sun.shadow.camera, {
+    left: -360,
+    right: 360,
+    top: 360,
+    bottom: -360,
+    near: 1,
+    far: 1900,
+  });
+  sun.shadow.camera.updateProjectionMatrix();
+  sun.shadow.bias = -0.00018;
+  sun.shadow.normalBias = 0.48;
+  sun.shadow.autoUpdate = false;
+  let shadowGeneration = -1;
+  scene.add(sun, sun.target, ambient);
+  scene.fog = new T.FogExp2(0xb6d6ed, 0.00028);
   const f = { x: 0, z: 0, y: 0, heading: 0, district: '', travelled: 0 },
     cameraPos = new T.Vector3(),
     look = new T.Vector3(),
@@ -135,6 +168,19 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
     toggleMap,
     districtAt,
   );
+  function hiddenFromPilot(x, y, z) {
+    const eye = camera.position;
+    const steps = Math.ceil(Math.hypot(x - eye.x, z - eye.z) / 34);
+    for (let k = 1; k < steps; k++) {
+      const t = k / steps;
+      if (
+        tiles.roof(eye.x + (x - eye.x) * t, eye.z + (z - eye.z) * t) >
+        eye.y + (y - eye.y) * t + 1
+      )
+        return true;
+    }
+    return false;
+  }
   function labels() {
     const candidates = [];
     for (const tile of tiles.tiles.values())
@@ -167,6 +213,7 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
       )
         continue;
       if (taken.some(([a, b]) => Math.abs(x - a) < 108 && Math.abs(y - b) < 32)) continue;
+      if (hiddenFromPilot(p[2], h, p[3])) continue;
       const el = document.createElement('span');
       el.textContent = p[0];
       el.style.left = x + 'px';
@@ -254,14 +301,14 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
     updateControlSurfaces(controls, state.bank / 0.36, state.night ? 1 : 0, state.paused ? 0 : dt);
     forward.set(Math.sin(f.heading * rad), 0, -Math.cos(f.heading * rad));
     camera.near = 0.3;
-    camera.far = 5000;
+    camera.far = 26000;
     camera.fov = innerWidth < 600 ? 62 : 53;
     camera.updateProjectionMatrix();
     const view = state.view;
     cameraPos
       .copy(aircraft.position)
       .addScaledVector(forward, view === 0 ? -24 : view === 1 ? 24 : -0.1);
-    cameraPos.y += view === 2 ? 90 : 10;
+    cameraPos.y += view === 2 ? 90 : 6.8;
     cameraPos.y = Math.max(
       cameraPos.y,
       tiles.roof(cameraPos.x, cameraPos.z) + 4,
@@ -270,15 +317,26 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
     camera.position.lerp(cameraPos, smooth ? 1 - Math.exp(-dt * 12) : 1);
     smooth = true;
     look.copy(aircraft.position).addScaledVector(forward, view === 2 ? 4 : view === 1 ? -31 : 31);
-    look.y -= view === 2 ? 0 : 11;
+    look.y -= view === 2 ? 0 : 1.8;
     camera.up.set(0, 1, 0);
     if (view === 2) camera.up.copy(forward);
     camera.lookAt(look);
     camera.updateMatrixWorld();
-    sky.setHex(state.night ? 0x233748 : 0xb8d3d7);
-    scene.fog.color.copy(sky);
-    sun.intensity = state.night ? 0.3 : 1.9;
-    ambient.intensity = state.night ? 0.5 : 1.6;
+    sky.update(camera, ground, state.night, false, $('cloud-toggle').checked);
+    time.value = state.elapsed;
+    scene.fog.color.setHex(state.night ? 0x233748 : 0xb6d6ed);
+    sun.intensity = state.night ? 0.26 : 2.55;
+    ambient.intensity = state.night ? 0.44 : 1.15;
+    if (
+      shadowGeneration !== tiles.generation ||
+      Math.hypot(sun.target.position.x - f.x, sun.target.position.z - f.z) > 70
+    ) {
+      sun.target.position.set(f.x, ground(f.x, f.z) + 50, f.z);
+      sun.position.copy(sun.target.position).addScaledVector(sky.sunDirection, 960);
+      sun.shadow.needsUpdate = true;
+      shadowGeneration = tiles.generation;
+    }
+    skyline.update(f.x, f.z, 5100, tiles.tiles, tiles.generation);
     elapsedHud += dt;
     if (elapsedHud > 0.18) {
       labels();
