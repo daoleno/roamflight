@@ -6,6 +6,7 @@ import { project, geographic, origin, contains, makeTerrain } from './chengdu-ge
 import { streetTiles, streetRoot, decodeGzip } from './street-tiles.js';
 import { localSky } from './flight-sky.js';
 import { loadSkyline } from './chengdu-skyline.js';
+import { streetBackdrop } from './street-backdrop.js';
 import { streetChart } from './street-chart.js';
 import { guide, tour, distanceLabel } from './street-guide.js';
 const $ = (id) => document.getElementById(id);
@@ -56,17 +57,7 @@ export async function createStreetFlight(renderer, scene, camera, state, notify,
   });
   const skyline = await loadSkyline(ground, 1, 1);
   scene.add(skyline.group);
-  const floor = new T.PlaneGeometry(
-    (terrain.right - terrain.left) * 1000,
-    (terrain.bottom - terrain.top) * 1000,
-    atlas.grid[0] - 1,
-    atlas.grid[1] - 1,
-  );
-  floor.rotateX(-Math.PI / 2);
-  floor.translate((terrain.left + terrain.right) * 500, 0, (terrain.top + terrain.bottom) * 500);
-  for (let i = 0; i < heights.length; i++) floor.attributes.position.setY(i, heights[i] - 2);
-  floor.computeVertexNormals();
-  scene.add(new T.Mesh(floor, new T.MeshLambertMaterial({ map: regionalImage })));
+  scene.add(streetBackdrop(atlas, terrain, heights, regionalImage));
   const sky = localSky(scene, true);
   const sun = new T.DirectionalLight(0xffedcd, 2.55),
     ambient = new T.HemisphereLight(0xd9edff, 0x646456, 1.15);

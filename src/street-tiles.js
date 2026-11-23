@@ -42,7 +42,7 @@ function inside(x, z, r) {
   }
   return hit;
 }
-function makeTile(i, j, size, records, ground, imagery, environment) {
+async function makeTile(i, j, size, records, ground, imagery, environment, yieldFrame) {
   const ox = i * size,
     oz = j * size,
     group = new T.Group();
@@ -77,30 +77,24 @@ function makeTile(i, j, size, records, ground, imagery, environment) {
         }
       }
   }
-  const chart = document.createElement('canvas');
-  chart.width = chart.height = 640;
-  const ink = chart.getContext('2d');
-  ink.scale(640 / size, 640 / size);
-  ink.fillStyle = '#e1e2d5';
-  ink.fillRect(0, 0, size, size);
-  paintLayers(ink);
   const { terrain, regionalImage, wave, time } = environment;
   const image = regionalImage.image;
   const sx = image.width / ((terrain.right - terrain.left) * 1000),
     sz = image.height / ((terrain.bottom - terrain.top) * 1000);
-  ctx.drawImage(
-    image,
-    (ox - terrain.left * 1000) * sx,
-    (oz - terrain.top * 1000) * sz,
-    size * sx,
-    size * sz,
-    0,
-    0,
-    size,
-    size,
-  );
   if (imagery)
     ctx.drawImage(imagery, ox / 10, (oz + 1200) / 10, size / 10, size / 10, 0, 0, size, size);
+  else
+    ctx.drawImage(
+      image,
+      (ox - terrain.left * 1000) * sx,
+      (oz - terrain.top * 1000) * sz,
+      size * sx,
+      size * sz,
+      0,
+      0,
+      size,
+      size,
+    );
   // Retain the satellite variation underneath mapped surfaces and use separate chart ink.
   const pavement = {
     path: '#b6a993',
@@ -317,7 +311,12 @@ function makeTile(i, j, size, records, ground, imagery, environment) {
   const roof = new T.Color(),
     wall = new T.Color();
   // Storey marks are a visual scale cue. Only the outline and sourced / estimated height carry location-specific information.
+  let deadline = performance.now() + 4;
   for (const [kind, name, attr, rings] of records) {
+    if (performance.now() > deadline) {
+      await yieldFrame();
+      deadline = performance.now() + 4;
+    }
     if (kind === 'p') {
       labels.push({
         name,
@@ -501,13 +500,24 @@ function makeTile(i, j, size, records, ground, imagery, environment) {
   const buildings = new T.Mesh(geo, material);
   buildings.castShadow = buildings.receiveShadow = true;
   group.add(buildings);
-  for (const h of hulls) {
-    trace(ink, h.rings, true);
-    ink.fillStyle = '#a89d8b';
-    ink.fill('evenodd');
-    ink.lineWidth = 1.2;
-    ink.strokeStyle = '#918a7c';
-    ink.stroke();
+  let chartCanvas;
+  function drawChart() {
+    const chart = document.createElement('canvas');
+    chart.width = chart.height = 640;
+    const ink = chart.getContext('2d');
+    ink.scale(640 / size, 640 / size);
+    ink.fillStyle = '#e1e2d5';
+    ink.fillRect(0, 0, size, size);
+    paintLayers(ink);
+    for (const h of hulls) {
+      trace(ink, h.rings, true);
+      ink.fillStyle = '#a89d8b';
+      ink.fill('evenodd');
+      ink.lineWidth = 1.2;
+      ink.strokeStyle = '#918a7c';
+      ink.stroke();
+    }
+    chartCanvas = chart;
   }
   const bucketSize = 100;
   const footprints = new Map();
@@ -525,7 +535,10 @@ function makeTile(i, j, size, records, ground, imagery, environment) {
   }
   return {
     group,
-    chart,
+    get chart() {
+      if (!chartCanvas) drawChart();
+      return chartCanvas;
+    },
     ox,
     oz,
     labels,
@@ -557,7 +570,8 @@ function makeTile(i, j, size, records, ground, imagery, environment) {
       floor.material.dispose();
       geo.dispose();
       material.dispose();
-      canvas.width = chart.width = 1;
+      canvas.width = 1;
+      if (chartCanvas) chartCanvas.width = 1;
     },
   };
 }
@@ -584,6 +598,7 @@ export function streetTiles(scene, index, ground, environment) {
     }
     return imagery;
   }
+  let buildQueue = Promise.resolve();
   async function load(key) {
     const entry = index.tiles[key];
     if (!entry) return;
@@ -601,12 +616,22 @@ export function streetTiles(scene, index, ground, environment) {
       bytes += data.byteLength;
       if (response.status !== 206) data = data.slice(start, start + length);
       if (!wanted.has(key)) return;
-      const records = decodeGzip(data);
-      await new Promise(requestAnimationFrame);
-      if (!wanted.has(key)) return;
       const img = await groundImage(i, j);
-      if (!wanted.has(key)) return;
-      const tile = makeTile(i, j, size, records, ground, img, environment);
+      const yieldFrame = async () => {
+        await new Promise(requestAnimationFrame);
+        ctl.signal.throwIfAborted();
+      };
+      // Serialize CPU work even when several byte ranges arrive in the same network batch.
+      const build = buildQueue.then(async () => {
+        await yieldFrame();
+        return makeTile(i, j, size, decodeGzip(data), ground, img, environment, yieldFrame);
+      });
+      buildQueue = build.catch(() => {});
+      const tile = await build;
+      if (!wanted.has(key)) {
+        tile.dispose();
+        return;
+      }
       tiles.set(key, tile);
       scene.add(tile.group);
       failures.delete(key);

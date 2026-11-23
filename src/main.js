@@ -153,7 +153,9 @@ async function start() {
   try {
     renderer = new THREE.WebGLRenderer({
       canvas,
-      antialias: true,
+      // Street flight already filters facade detail, river textures and shadows. Per-sample
+      // rasterization is particularly expensive where those surfaces overlap at low altitude.
+      antialias: params.get('region') !== 'chengdu' || params.get('mode') === 'region',
       alpha: false,
       powerPreference: 'high-performance',
       preserveDrawingBuffer: true,

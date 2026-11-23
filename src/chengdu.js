@@ -64,7 +64,7 @@ export async function createChengdu(renderer, scene, camera, state, notify) {
       vec2 edge=min(cityUv,1.-cityUv);
       float blend=smoothstep(0.,.065,min(edge.x,edge.y))*showCentre;
       if(blend>0.) diffuseColor.rgb=mix(diffuseColor.rgb,texture2D(centre,cityUv).rgb,blend);
-      diffuseColor.rgb+=showCentre*vec3(.007,.009,.011);`,
+      diffuseColor.rgb+=showCentre*vec3(.017,.022,.029);`,
       );
   };
   surface.colorSpace = T.SRGBColorSpace;

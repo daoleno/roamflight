@@ -107,3 +107,39 @@ test('regional skyline triangles keep the local metre outline and height of the 
   }
   for (let i = 0; i < ring.length; i += 2) assert.ok(roof.has([ring[i], ring[i + 1]].join(',')));
 });
+
+test('street backdrop patches preserve each DEM cell and enclose the rendered terrain', async () => {
+  const { Vector3 } = await import('three');
+  const { streetBackdrop } = await import('../src/street-backdrop.js');
+  // Include partial patches at the south and east edges and a peak inside a patch.
+  const cols = 36,
+    rows = 21;
+  const heights = new Int16Array(cols * rows);
+  heights[8 * cols + 8] = 2980;
+  const group = streetBackdrop(
+    { grid: [cols, rows] },
+    { left: -4, right: 13, top: -5, bottom: 8 },
+    heights,
+    null,
+  );
+  const cells = new Set(),
+    point = new Vector3();
+  for (const mesh of group.children) {
+    const { index, attributes, boundingSphere } = mesh.geometry;
+    for (let i = 0; i < index.count; i += 6) {
+      const origin = index.getX(i);
+      assert.deepEqual(
+        [...index.array.subarray(i, i + 6)],
+        [origin, origin + cols, origin + 1, origin + cols, origin + cols + 1, origin + 1],
+      );
+      assert.ok(!cells.has(origin));
+      cells.add(origin);
+    }
+    for (const vertex of index.array) {
+      point.fromBufferAttribute(attributes.position, vertex);
+      assert.equal(point.y, heights[vertex] - 2);
+      assert.ok(point.distanceTo(boundingSphere.center) <= boundingSphere.radius + 1e-6);
+    }
+  }
+  assert.equal(cells.size, (cols - 1) * (rows - 1));
+});
